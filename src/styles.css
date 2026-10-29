@@ -1,0 +1,121 @@
+/**
+ * Stable class names for @contourapp/data-table.
+ *
+ * Import once in your app: `import '@contourapp/data-table/styles.css'`.
+ * Colours and spacing come from Mantine CSS variables, so the table inherits
+ * the host theme. Three variables are table-specific and may be overridden:
+ *   --table-border-color  row and header borders (default: gray-3)
+ *   --tr-hover-bg         row hover background  (default: gray-0)
+ *   --app-shell-header-height  subtracted from the default full-height table
+ */
+
+.cdt-container {
+  overflow: auto;
+  position: relative;
+}
+
+.cdt-header-row {
+  display: grid;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: var(--mantine-color-body);
+  padding-inline: var(--mantine-spacing-lg);
+  border-bottom: calc(0.0625rem * var(--mantine-scale)) solid
+    var(--table-border-color, var(--mantine-color-gray-3));
+}
+
+.cdt-header-cell {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  padding: var(--mantine-spacing-xs) var(--mantine-spacing-xs);
+  font-weight: 700;
+  font-size: var(--mantine-font-size-sm);
+}
+
+.cdt-header-cell[data-sortable='false'] {
+  cursor: default;
+}
+
+.cdt-body-row {
+  display: grid;
+  align-items: center;
+  border-bottom: calc(0.0625rem * var(--mantine-scale)) solid
+    var(--table-border-color, var(--mantine-color-gray-3));
+  padding-inline: var(--mantine-spacing-lg);
+}
+
+.cdt-body-row[data-clickable='true'] {
+  cursor: pointer;
+}
+
+.cdt-body-row:hover {
+  background-color: var(--tr-hover-bg, var(--mantine-color-gray-0));
+}
+
+.cdt-body-row[data-dragging='true'] {
+  opacity: 0.4;
+}
+
+.cdt-body-row[data-drop-above='true'] {
+  border-top: 2px solid var(--mantine-color-blue-5);
+}
+
+.cdt-body-row[data-drop-below='true'] {
+  border-bottom: 2px solid var(--mantine-color-blue-5);
+}
+
+.cdt-body-cell {
+  display: flex;
+  align-items: center;
+  padding: var(--mantine-spacing-xs) var(--mantine-spacing-xs);
+  font-size: var(--mantine-font-size-sm);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cdt-detail-panel {
+  border-bottom: calc(0.0625rem * var(--mantine-scale)) solid
+    var(--table-border-color, var(--mantine-color-gray-3));
+}
+
+.cdt-system-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--mantine-spacing-xs) 4px;
+}
+
+.cdt-actions-cell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+  padding: var(--mantine-spacing-xs) var(--mantine-spacing-xs);
+}
+
+.cdt-body-row [data-hover-action] {
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.cdt-body-row:hover [data-hover-action] {
+  opacity: 1;
+}
+
+.cdt-virtual-row {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+.cdt-filter-bar {
+  padding: 8px var(--mantine-spacing-md);
+  height: 47.5px;
+  border-bottom: calc(0.0625rem * var(--mantine-scale)) solid
+    var(--table-border-color, var(--mantine-color-gray-2));
+}
