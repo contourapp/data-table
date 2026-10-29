@@ -34,6 +34,32 @@
   padding: var(--mantine-spacing-xs) var(--mantine-spacing-xs);
   font-weight: 700;
   font-size: var(--mantine-font-size-sm);
+  /* Anchors .cdt-column-menu, and lets narrow tracks shrink their label
+     instead of forcing the grid wider. */
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* Overlaid on the cell's right edge rather than placed in its flow, so a
+   column costs no width for having a menu. */
+.cdt-column-menu {
+  position: absolute;
+  right: 2px;
+  opacity: 0;
+  transition: opacity 120ms ease;
+  background-color: var(--mantine-color-body);
+}
+
+.cdt-header-cell:hover .cdt-column-menu,
+.cdt-column-menu[data-open] {
+  opacity: 1;
+}
+
+/* Keyboard users never hover, so the menu has to surface on focus too. */
+.cdt-column-menu:focus-visible {
+  opacity: 1;
 }
 
 .cdt-header-cell[data-sortable='false'] {
@@ -118,4 +144,19 @@
   height: 47.5px;
   border-bottom: calc(0.0625rem * var(--mantine-scale)) solid
     var(--table-border-color, var(--mantine-color-gray-2));
+}
+
+/* Chips scroll sideways rather than wrapping, which would break the bar's
+   fixed height and the table height that is calculated from it. */
+.cdt-filter-bar-scroll {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.cdt-filter-bar-scroll::-webkit-scrollbar {
+  display: none;
 }

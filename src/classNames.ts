@@ -15,4 +15,6 @@ export const classNames = {
   actionsCell: 'cdt-actions-cell',
   virtualRow: 'cdt-virtual-row',
   filterBar: 'cdt-filter-bar',
+  filterBarScroll: 'cdt-filter-bar-scroll',
+  columnMenu: 'cdt-column-menu',
 } as const;

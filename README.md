@@ -5,7 +5,8 @@ A virtualized, filterable data table for React, built on [Mantine](https://manti
 Extracted from Contour, where it backs ~50 admin and reporting tables.
 
 - **One `<DataTable>`** covering sorting, row selection, expansion and sub-rows, grouping, row ordering by drag, row actions, detail panels, infinite scroll with virtualization, empty states and loading skeletons.
-- **A filter bar** (`<TableFilters>`) that reads filterable columns straight off your column defs and produces a typed, GraphQL-shaped filter object.
+- **A toolbar** (`<TableFilters>`) holding both filter and sort chips, built from your column defs, producing a typed GraphQL-shaped filter object and a TanStack `SortingState`.
+- **Per-column header menus** for sorting and filtering a single column, overlaid on the header so they cost no width.
 - **URL-synchronized state** — `useTableFilters` and `useTableSorting` keep filters and sorting in the query string, so a filtered table survives a reload or a shared link.
 - **CSS-grid layout**, not `<table>`, so column tracks, sticky headers and virtual rows stay consistent.
 
@@ -72,6 +73,8 @@ export function InvoicesTable({ searchParams }: { searchParams: Record<string, s
         columns={columns}
         filters={tableFilters}
         onFiltersChange={setTableFilters}
+        sorting={sorting}
+        onSortingChange={setSorting}
       />
       <DataTable
         dataType="invoices"
@@ -81,6 +84,8 @@ export function InvoicesTable({ searchParams }: { searchParams: Record<string, s
         enableTableFilters
         sorting={sorting}
         onSortingChange={setSorting}
+        tableFilters={tableFilters}
+        onTableFiltersChange={setTableFilters}
         baseHref="/invoices"
         totalRowCount={data?.totalCount}
         onFetchMore={fetchMore}
@@ -89,6 +94,30 @@ export function InvoicesTable({ searchParams }: { searchParams: Record<string, s
   );
 }
 ```
+
+## Filtering and sorting
+
+Both live in the same toolbar, as removable chips. Pass the same state to
+`TableFilters` and `DataTable` and the two stay in step.
+
+- **`TableFilters`** renders a `Filter` and a `Sort` button when nothing is
+  applied, and chips plus an add/clear group once something is. Each chip is a
+  column, an operator or direction, and a value. Caps default to three of each
+  (`maxFilters`, `maxSorts`); omit `onSortingChange` to keep sorting out of the
+  bar entirely.
+- **Column header menus** appear on hover at the right edge of each header,
+  offering `Ascending` / `Descending` / `Clear sort` and `Add filter`. The menu
+  only lists what a column supports, and renders nothing for a column that can
+  neither sort nor filter.
+
+The two differ in one way worth knowing: the header menu **replaces** the sort,
+matching what clicking a header has always done, while adding from the toolbar
+**appends** one — that is where you compose a multi-column sort. Sorts apply in
+chip order, so in `Status ascending, Amount descending` the amount breaks ties
+within a status.
+
+Filtering addresses a column by its accessor key, so accessor-function columns
+are offered for sorting but not filtering.
 
 ## Column metadata
 
@@ -161,6 +190,17 @@ yarn test     # vitest
 yarn tsc      # type-check
 yarn build    # tsc -> dist/, plus styles.css
 ```
+
+`example/` is a plain Vite app — no Next.js — that links the package from
+source. It is the quickest way to see a change:
+
+```sh
+cd example && yarn install && yarn dev
+```
+
+Tests render through `test/renderWithMantine.tsx`, which sets Mantine's
+`env="test"`. Without it, dropdowns mount but their enter transition never
+settles under jsdom, so menu items stay invisible to role queries.
 
 ## License
 

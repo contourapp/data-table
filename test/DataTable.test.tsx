@@ -1,10 +1,9 @@
-import { MantineProvider } from '@mantine/core';
 import {
   functionalUpdate,
   type OnChangeFn,
   type SortingState,
 } from '@tanstack/react-table';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import {
@@ -12,6 +11,7 @@ import {
   DataTableConfigProvider,
   type DataTableColumnDef,
 } from '../src/index.js';
+import { renderWithMantine } from './renderWithMantine.js';
 
 interface Row {
   id: string;
@@ -33,12 +33,10 @@ const renderTable = (
   props: Partial<Parameters<typeof DataTable<Row>>[0]> = {},
   navigate?: (href: string) => void,
 ) =>
-  render(
-    <MantineProvider>
+  renderWithMantine(
       <DataTableConfigProvider navigate={navigate}>
         <DataTable dataType="rows" columns={columns} data={data} {...props} />
-      </DataTableConfigProvider>
-    </MantineProvider>,
+      </DataTableConfigProvider>,
   );
 
 describe('DataTable sorting', () => {

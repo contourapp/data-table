@@ -3,7 +3,10 @@ export type { DataTableColumnDef } from './DataTable.js';
 export { DataTableSkeleton } from './DataTableSkeleton.js';
 export { TableFilters } from './TableFilters.js';
 export { FilterRow } from './FilterRow.js';
+export { SortRow } from './SortRow.js';
+export type { ColumnSort } from './SortRow.js';
 
+export { ColumnMenu } from './components/ColumnMenu.js';
 export { DragHandle } from './components/DragHandle.js';
 export { EmptyState } from './components/EmptyState.js';
 export { ExpandAllButton } from './components/ExpandAllButton.js';
@@ -30,6 +33,7 @@ export type { Cell, Column, ColumnDef, Row } from './features.js';
 
 export {
   convertTableFiltersToGraphQL,
+  createFilterForColumn,
   deriveTableFieldMappingFromColumns,
   formatDateRangeValue,
   generateFilterId,
@@ -64,5 +68,14 @@ export {
 export { useTableFilters } from './hooks/useTableFilters.js';
 export { useTableSorting } from './hooks/useTableSorting.js';
 export type { OrderByDirection } from './hooks/useTableSorting.js';
+
+export {
+  getColumnId,
+  getColumnLabel,
+  getFilterableColumns,
+  getSortableColumns,
+} from './columnHelpers.js';
+
+export { DEFAULT_MAX_FILTERS, DEFAULT_MAX_SORTS } from './constants.js';
 
 export { classNames } from './classNames.js';

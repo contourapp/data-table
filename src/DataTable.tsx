@@ -14,6 +14,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import type { DragEvent, ReactNode, UIEvent } from 'react';
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 
+import { ColumnMenu } from './components/ColumnMenu.js';
 import { DragHandle } from './components/DragHandle.js';
 import { EmptyState } from './components/EmptyState.js';
 import { ExpandButton } from './components/ExpandButton.js';
@@ -21,7 +22,10 @@ import { FetchMoreProgress } from './components/LoadingOverlay.js';
 import { SelectCheckbox } from './components/SelectCheckbox.js';
 import { SortIndicator } from './components/SortIndicator.js';
 import { classNames as styles } from './classNames.js';
+import { getColumnId, getFilterableColumns } from './columnHelpers.js';
 import { useDataTableConfig } from './config.js';
+import { DEFAULT_MAX_FILTERS } from './constants.js';
+import { createFilterForColumn, type TableFilter } from './filterHelpers.js';
 import { DataTableSkeleton } from './DataTableSkeleton.js';
 import { useAppTable } from './features.js';
 import type { ColumnDef, Row } from './features.js';
@@ -55,6 +59,15 @@ interface DataTableProps<TData extends object> {
   onColumnFiltersChange?: OnChangeFn<ColumnFiltersState>;
   /** Whether external table filters are rendered above this table (adjusts height) */
   enableTableFilters?: boolean;
+  /**
+   * Filter state, so each column header can offer "Add filter". Pass the same
+   * state you give `TableFilters`; without `onTableFiltersChange` the header
+   * menu offers sorting only.
+   */
+  tableFilters?: TableFilter[];
+  onTableFiltersChange?: (filters: TableFilter[]) => void;
+  /** Upper bound on simultaneous column filters, matching `TableFilters`. */
+  maxFilters?: number;
   /** Row selection */
   enableRowSelection?: boolean | ((row: Row<TData>) => boolean);
   enableMultiRowSelection?: boolean;
@@ -93,6 +106,7 @@ const APP_SHELL_HEADER_HEIGHT = 'var(--app-shell-header-height, 0px)';
 
 const EMPTY_DATA: never[] = [];
 const EMPTY_GROUPING: string[] = [];
+const EMPTY_TABLE_FILTERS: TableFilter[] = [];
 
 const DataTable = <TData extends object>({
   dataType,
@@ -107,6 +121,9 @@ const DataTable = <TData extends object>({
   columnFilters: columnFiltersProps,
   onColumnFiltersChange,
   enableTableFilters = false,
+  tableFilters = EMPTY_TABLE_FILTERS,
+  onTableFiltersChange,
+  maxFilters = DEFAULT_MAX_FILTERS,
   enableRowSelection = false,
   enableMultiRowSelection = false,
   selectedRows: rowSelection,
@@ -144,6 +161,20 @@ const DataTable = <TData extends object>({
   const enableExpanding = hasSubRows || !!renderDetailsPanel;
   const showActions = !!rowActions;
   const showDrag = enableRowOrdering;
+
+  const filterableColumnIds = new Set(
+    getFilterableColumns(columns)
+      .map(getColumnId)
+      .filter((id): id is string => !!id),
+  );
+
+  const addFilterForColumn = (columnId: string) => {
+    const column = columns.find((col) => getColumnId(col) === columnId);
+    onTableFiltersChange?.([
+      ...tableFilters,
+      createFilterForColumn(column, columnId),
+    ]);
+  };
 
   const gridTemplateParts: string[] = [];
   if (showDrag) gridTemplateParts.push('30px');
@@ -508,6 +539,17 @@ const DataTable = <TData extends object>({
                 {header.column.getCanSort() && (
                   <SortIndicator column={header.column} />
                 )}
+                <ColumnMenu
+                  column={header.column}
+                  canSort={header.column.getCanSort()}
+                  onAddFilter={
+                    filterableColumnIds.has(header.column.id) &&
+                    onTableFiltersChange &&
+                    tableFilters.length < maxFilters
+                      ? () => addFilterForColumn(header.column.id)
+                      : undefined
+                  }
+                />
               </Box>
             )),
           )}

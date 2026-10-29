@@ -1,6 +1,5 @@
-import { MantineProvider } from '@mantine/core';
-import { render, screen } from '@testing-library/react';
-import { userEvent } from '@testing-library/user-event';
+import type { SortingState } from '@tanstack/react-table';
+import { fireEvent, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import {
@@ -8,6 +7,7 @@ import {
   type DataTableColumnDef,
   type TableFilter,
 } from '../src/index.js';
+import { renderWithMantine } from './renderWithMantine.js';
 
 interface Employee {
   id: string;
@@ -27,26 +27,39 @@ const columns: DataTableColumnDef<Employee>[] = [
 const renderFilters = (
   filters: TableFilter[],
   onFiltersChange: (next: TableFilter[]) => void,
-  props: { maxFilters?: number } = {},
+  props: Partial<Parameters<typeof TableFilters<Employee>>[0]> = {},
 ) =>
-  render(
-    <MantineProvider>
+  renderWithMantine(
       <TableFilters
         columns={columns}
         filters={filters}
         onFiltersChange={onFiltersChange}
         {...props}
-      />
-    </MantineProvider>,
+      />,
   );
+
+// Mantine's menus and selects open on click, but userEvent's full pointer
+// sequence trips their click-outside handling under jsdom.
+const openMenu = async (name: string) => {
+  fireEvent.click(screen.getByRole('button', { name }));
+  await screen.findAllByRole('menuitem');
+};
+
+const clickMenuItem = (label: string) => {
+  const item = screen
+    .getAllByRole('menuitem')
+    .find((candidate) => candidate.textContent === label);
+  if (!item) throw new Error(`no menu item labelled ${label}`);
+  fireEvent.click(item);
+};
 
 describe('TableFilters', () => {
   it('stamps the column’s configured field onto a new filter', async () => {
     const onFiltersChange = vi.fn<(next: TableFilter[]) => void>();
     renderFilters([], onFiltersChange);
 
-    await userEvent.click(screen.getByRole('button', { name: 'Filter' }));
-    await userEvent.click(await screen.findByRole('menuitem', { name: 'Name' }));
+    await openMenu('Filter');
+    clickMenuItem('Name');
 
     expect(onFiltersChange).toHaveBeenCalledTimes(1);
     expect(onFiltersChange.mock.calls[0][0][0]).toMatchObject({
@@ -61,10 +74,8 @@ describe('TableFilters', () => {
     const onFiltersChange = vi.fn<(next: TableFilter[]) => void>();
     renderFilters([], onFiltersChange);
 
-    await userEvent.click(screen.getByRole('button', { name: 'Filter' }));
-    await userEvent.click(
-      await screen.findByRole('menuitem', { name: 'Status' }),
-    );
+    await openMenu('Filter');
+    clickMenuItem('Status');
 
     expect(onFiltersChange.mock.calls[0][0][0]).toMatchObject({
       columnId: 'status',
@@ -86,5 +97,98 @@ describe('TableFilters', () => {
     renderFilters(existing, vi.fn(), { maxFilters: 1 });
 
     expect(screen.queryByLabelText('Add filter')).not.toBeInTheDocument();
+  });
+});
+
+describe('TableFilters sorting', () => {
+  const renderWithSorting = (
+    sorting: SortingState,
+    onSortingChange: (next: SortingState) => void,
+    filters: TableFilter[] = [],
+  ) => renderFilters(filters, vi.fn(), { sorting, onSortingChange });
+
+  it('offers a Sort button beside Filter when sorting is wired up', async () => {
+    const onSortingChange = vi.fn<(next: SortingState) => void>();
+    renderWithSorting([], onSortingChange);
+
+    await openMenu('Sort');
+    clickMenuItem('Name');
+
+    expect(onSortingChange).toHaveBeenCalledWith([
+      { id: 'dimension_value_name', desc: false },
+    ]);
+  });
+
+  it('hides the Sort button when no sorting handler is given', () => {
+    renderFilters([], vi.fn());
+
+    expect(screen.getByRole('button', { name: 'Filter' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Sort' })).toBeNull();
+  });
+
+  it('flips direction from the sort chip', async () => {
+    const onSortingChange = vi.fn<(next: SortingState) => void>();
+    renderWithSorting([{ id: 'status', desc: false }], onSortingChange);
+
+    fireEvent.click(screen.getByRole('combobox', { name: 'Sort direction' }));
+    fireEvent.click(await screen.findByRole('option', { name: 'descending' }));
+
+    expect(onSortingChange).toHaveBeenCalledWith([{ id: 'status', desc: true }]);
+  });
+
+  it('retargets a chip at another column without duplicating an existing sort', async () => {
+    const onSortingChange = vi.fn<(next: SortingState) => void>();
+    renderWithSorting(
+      [
+        { id: 'status', desc: false },
+        { id: 'dimension_value_name', desc: true },
+      ],
+      onSortingChange,
+    );
+
+    fireEvent.click(screen.getAllByRole('combobox', { name: 'Sort column' })[0]);
+    fireEvent.click(await screen.findByRole('option', { name: 'Name' }));
+
+    expect(onSortingChange).toHaveBeenCalledWith([
+      { id: 'dimension_value_name', desc: false },
+    ]);
+  });
+
+  it('drops a sort when its chip is cleared', () => {
+    const onSortingChange = vi.fn<(next: SortingState) => void>();
+    renderWithSorting(
+      [
+        { id: 'status', desc: false },
+        { id: 'dimension_value_name', desc: true },
+      ],
+      onSortingChange,
+    );
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Clear sort' })[0]);
+
+    expect(onSortingChange).toHaveBeenCalledWith([
+      { id: 'dimension_value_name', desc: true },
+    ]);
+  });
+
+  it('never offers a column that is already sorted', async () => {
+    renderWithSorting([{ id: 'status', desc: false }], vi.fn());
+
+    await openMenu('Add filter');
+
+    // Name is offered under both headings; Status only under "Filter by",
+    // because it already holds a sort chip.
+    expect(
+      screen.getAllByRole('menuitem').map((item) => item.textContent),
+    ).toEqual(['Name', 'Status', 'Name']);
+  });
+
+  it('clears sorting alongside filters', () => {
+    const onSortingChange = vi.fn<(next: SortingState) => void>();
+    renderWithSorting([{ id: 'status', desc: false }], onSortingChange);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Clear all' }));
+
+    expect(onSortingChange).toHaveBeenCalledWith([]);
   });
 });

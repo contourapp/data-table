@@ -105,6 +105,27 @@ const SELECT_OPERATORS = [
   { value: 'notEquals', label: 'is not' },
 ] satisfies { value: FilterOperator; label: string }[];
 
+/**
+ * Builds a blank filter for a column, resolving the type, default operator and
+ * backend field from the column def. Shared by the filter bar and the column
+ * menu so a filter added from either place is identical.
+ */
+export function createFilterForColumn<TData extends object>(
+  column: DataTableColumnDef<TData> | undefined,
+  columnId: string,
+): TableFilter {
+  const columnType = column ? getColumnType(column) : 'text';
+
+  return {
+    id: generateFilterId(),
+    columnId,
+    operator: getDefaultOperatorForColumn(column, columnType),
+    value: '',
+    columnType,
+    field: column ? getColumnField(column) : undefined,
+  };
+}
+
 export function generateFilterId(): string {
   return `filter-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 }
