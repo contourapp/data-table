@@ -6,15 +6,18 @@
  * the host theme. A few variables are table-specific and may be overridden:
  *   --table-border-color  row and header borders (default: gray-3)
  *   --tr-hover-bg         row hover background  (default: gray-0)
- *   --cdt-filter-color    active filter indicators (default: text)
- *   --cdt-sort-color      active sort indicators   (default: text)
+ *   --cdt-filter-color    filter indicators, toolbar and headers (default: primary)
+ *   --cdt-sort-color      sort indicators, toolbar and headers   (default: primary)
  *   --app-shell-header-height  subtracted from the default full-height table
  *
- * Filters and sorts are kept visibly different throughout, by shape rather
- * than by hue: a filter is a funnel, hollow until it is doing something and
- * solid once it is, and a sort is a direction arrow. Both sit at the text
- * colour so a header reads as a header; set the two variables above to
- * accent either.
+ * An indicator is in the accent colour whenever it is live: the funnel on a
+ * filtered column, the arrow on a sorted one, and the glyph leading either
+ * group in the toolbar. Controls inside a chip stay neutral — the accent says
+ * what a group is, not which of its parts you can click.
+ *
+ * Which of the two it is comes from shape, not hue — a filter is a funnel,
+ * hollow while it is only an affordance and solid once the column is
+ * filtered; a sort is a direction arrow carrying its position.
  */
 
 .cdt-container {
@@ -91,7 +94,7 @@
 
 .cdt-sort-indicator[data-active] {
   opacity: 1;
-  color: var(--cdt-sort-color, var(--mantine-color-text));
+  color: var(--cdt-sort-color, var(--mantine-primary-color-filled));
 }
 
 /* Which sort runs first is what decides the row order, so under a multi-column
@@ -125,7 +128,7 @@
 .cdt-column-filter[data-active] {
   opacity: 1;
   pointer-events: auto;
-  color: var(--cdt-filter-color, var(--mantine-color-text));
+  color: var(--cdt-filter-color, var(--mantine-primary-color-filled));
 }
 
 .cdt-header-cell[data-sortable='false'] {
@@ -302,10 +305,10 @@
   border-radius: 0;
 }
 
-/* The direction arrow is the chip's state, not a dismissal, so it matches the
-   header indicator's colour rather than sitting at the X's weight. */
+/* The direction arrow is the chip's state, not a dismissal, so it carries the
+   text colour rather than sitting at the X's weight. */
 .cdt-chip-button[data-direction] {
-  color: var(--cdt-sort-color, var(--mantine-color-text));
+  color: var(--mantine-color-text);
 }
 
 /* Filters and sorts are separate groups, each led by its glyph and divided
@@ -348,15 +351,19 @@
   display: none;
 }
 
+/* The glyph leading a group takes the accent its header counterpart does, so
+   the funnel in the bar and the funnel on a column read as the same thing.
+   Inside a chip the controls stay neutral — the accent marks what a group is,
+   not every part of it. */
 .cdt-toolbar-group-icon {
   display: flex;
   align-items: center;
   flex: 0 0 auto;
-  color: var(--cdt-sort-color, var(--mantine-color-text));
+  color: var(--cdt-sort-color, var(--mantine-primary-color-filled));
 }
 
 .cdt-toolbar-group[data-kind='filter'] .cdt-toolbar-group-icon {
-  color: var(--cdt-filter-color, var(--mantine-color-text));
+  color: var(--cdt-filter-color, var(--mantine-primary-color-filled));
 }
 
 .cdt-toolbar-divider {

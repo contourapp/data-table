@@ -123,10 +123,10 @@ Each state is quiet until it means something:
 | Column is           | Header shows                                              |
 | ------------------- | --------------------------------------------------------- |
 | sortable, unsorted  | nothing; a faint `⇅` on hover                              |
-| sorted              | `↑` or `↓` beside the label                                |
+| sorted              | `↑` or `↓` in the accent colour, beside the label          |
 | sorted, among many  | the same arrow with its position, so `↑1` leads `↓2`       |
 | filterable          | nothing; a faint outline funnel on hover, which adds a filter |
-| filtered            | a solid funnel, which removes it                           |
+| filtered            | a solid funnel in the accent colour, which removes it      |
 
 Both indicators share one group beside the label, never split across the cell,
 with a tight gap between them and a wider one from the label — proximity does
@@ -161,9 +161,13 @@ once, so no single cue has to carry it:
    the column is filtered, so "this column is hiding rows" is legible without
    reading the toolbar.
 
-Neither takes an accent colour by default: both sit at the text colour, so a
-header reads as a header. Set `--cdt-filter-color` or `--cdt-sort-color` to
-accent either one.
+Colour separates live from idle rather than filter from sort. An indicator
+takes the accent whenever it is doing something — the funnel on a filtered
+column, the arrow on a sorted one, and the glyph leading either group in the
+toolbar — so it stands out against the black of the labels. Controls inside a
+chip stay neutral: the accent says what a group is, not which of its parts you
+can click. `--cdt-filter-color` and `--cdt-sort-color` override the two
+independently.
 
 A chip is as wide as the words in it and never shrinks below them. If a group
 outgrows its row it scrolls sideways and the edge that is hiding a chip fades,
@@ -223,8 +227,8 @@ Colours and spacing come from Mantine CSS variables, so the table inherits the h
 | Variable                    | Default              | Effect                                 |
 | --------------------------- | -------------------- | -------------------------------------- |
 | `--table-border-color`      | `--mantine-color-gray-3` | Header and row borders.            |
-| `--cdt-filter-color`        | `--mantine-color-text`   | Active filter indicators, toolbar and headers. |
-| `--cdt-sort-color`          | `--mantine-color-text`   | Active sort indicators, toolbar and headers. |
+| `--cdt-filter-color`        | `--mantine-primary-color-filled` | Filter indicators, toolbar and headers. |
+| `--cdt-sort-color`          | `--mantine-primary-color-filled` | Sort indicators, toolbar and headers. |
 | `--tr-hover-bg`             | `--mantine-color-gray-0` | Row hover background.              |
 | `--app-shell-header-height` | `0px`                | Subtracted from the default full-height table. |
 
