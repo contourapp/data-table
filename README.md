@@ -141,6 +141,8 @@ Colours and spacing come from Mantine CSS variables, so the table inherits the h
 
 Class names are stable and exported as `classNames` for targeting table internals from your own stylesheet. Mark an element inside a cell with `data-hover-action` to have it fade in only on row hover.
 
+The stylesheet is plain, globally-scoped CSS rather than a CSS module. That mirrors what Mantine itself publishes — a single prebuilt `styles.css` with static class names — so consumers need no CSS-module support, and it keeps the build to `tsc` alone. The tradeoff is that `cdt-*` lives in the global namespace; the prefix is the only thing keeping it out of your way.
+
 ## Filter output
 
 `useTableFilters` returns a `filter` shaped for a GraphQL filter input — `{ and: [{ field: { op: value } }] }` — using operators `eq`, `ne`, `gt`, `gte`, `lt`, `lte`, `ilike`, `notIlike` and `null`. Pass your schema's generated filter type as the hook's type parameter to have it checked:
@@ -162,4 +164,4 @@ yarn build    # tsc -> dist/, plus styles.css
 
 ## License
 
-Unlicensed / proprietary. Internal to Contour unless stated otherwise.
+[MIT](./LICENSE) © Contour
