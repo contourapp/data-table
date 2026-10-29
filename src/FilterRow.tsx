@@ -111,7 +111,7 @@ export function FilterRow<TData extends object>({
           minWidth: '100px',
           maxWidth: '120px',
           border: 'none',
-          borderRight: '1px solid var(--mantine-color-gray-3)',
+          borderRight: '1px solid var(--mantine-color-gray-2)',
           borderRadius: 0,
         },
       },
@@ -140,7 +140,7 @@ export function FilterRow<TData extends object>({
               minWidth: '220px',
               maxWidth: '260px',
               border: 'none',
-              borderRight: '1px solid var(--mantine-color-gray-3)',
+              borderRight: '1px solid var(--mantine-color-gray-2)',
               borderRadius: 0,
             },
           }}
@@ -236,9 +236,8 @@ export function FilterRow<TData extends object>({
             maxWidth: '100px',
             fontWeight: 500,
             border: 'none',
-            borderRight: '1px solid var(--mantine-color-gray-3)',
-            borderRadius:
-              'var(--mantine-radius-sm) 0 0 var(--mantine-radius-sm)',
+            borderRight: '1px solid var(--mantine-color-gray-2)',
+            borderRadius: 0,
           },
         }}
         comboboxProps={{ offset: 4, width: 'max-content' }}
@@ -260,7 +259,7 @@ export function FilterRow<TData extends object>({
               minWidth: '70px',
               maxWidth: '100px',
               border: 'none',
-              borderRight: '1px solid var(--mantine-color-gray-3)',
+              borderRight: '1px solid var(--mantine-color-gray-2)',
               borderRadius: 0,
             },
           }}

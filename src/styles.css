@@ -222,9 +222,11 @@
   gap: 6px var(--mantine-spacing-sm);
 }
 
+/* Clipped so a control's hover fill stays inside the rounded corners. */
 .cdt-chip {
-  border: 1px solid var(--mantine-color-gray-4);
+  border: 1px solid var(--mantine-color-gray-3);
   border-radius: var(--mantine-radius-sm);
+  overflow: hidden;
 }
 
 /* Filters and sorts are separate groups, each led by its glyph and divided
@@ -262,7 +264,7 @@
   flex: 0 0 auto;
   width: 1px;
   height: 22px;
-  background-color: var(--mantine-color-gray-4);
+  background-color: var(--mantine-color-gray-3);
 }
 
 /* Once the sort group is on its own row, the rows themselves do the dividing. */
@@ -270,28 +272,19 @@
   display: none;
 }
 
-/* Sits between two filter chips as the word joining them. Bordered and
-   carrying a swap glyph so it reads as a control, not a label; lighter than
-   a chip so it does not compete with them. */
+/* Sits between two filter chips as the word joining them: a plain dropdown,
+   lighter than a chip so it reads as the joint and not a third condition. */
 .cdt-filter-connector {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
   flex: 0 0 auto;
-  height: 24px;
-  padding: 0 6px;
-  border: 1px dashed var(--mantine-color-gray-4);
-  border-radius: var(--mantine-radius-xl);
-  font-size: var(--mantine-font-size-xs);
-  font-weight: 600;
+  width: 58px;
+}
+
+.cdt-filter-connector input {
+  font-weight: 500;
   color: var(--mantine-color-dimmed);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
   cursor: pointer;
 }
 
-.cdt-filter-connector:hover {
-  border-style: solid;
-  background-color: var(--mantine-color-gray-0);
+.cdt-filter-connector:hover input {
   color: var(--mantine-color-text);
 }

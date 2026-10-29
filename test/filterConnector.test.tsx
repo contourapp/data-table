@@ -46,13 +46,20 @@ describe('filter connector in the toolbar', () => {
     );
 
   const connectors = () =>
-    screen.queryAllByRole('button', { name: /Filters are joined with/ });
+    screen.queryAllByRole('combobox', { name: 'Join filters with' });
+
+  const choose = async (connector: HTMLElement, label: string) => {
+    fireEvent.click(connector);
+    const option = (await screen.findAllByRole('option', { name: label })).at(-1);
+    if (!option) throw new Error(`no option ${label}`);
+    fireEvent.click(option);
+  };
 
   it('joins two filters with a connector', () => {
     renderBar(twoFilters, { connector: 'and', onConnectorChange: vi.fn() });
 
     expect(connectors()).toHaveLength(1);
-    expect(connectors()[0]).toHaveTextContent('and');
+    expect(connectors()[0]).toHaveValue('and');
   });
 
   it('shows one fewer connector than filters', () => {
@@ -79,23 +86,23 @@ describe('filter connector in the toolbar', () => {
     expect(connectors()).toHaveLength(0);
   });
 
-  it('flips the whole bar from one connector, not just that gap', () => {
+  it('flips the whole bar from one connector, not just that gap', async () => {
     const onConnectorChange = vi.fn();
     renderBar([...twoFilters, filterOn('other', 'x')], {
       connector: 'and',
       onConnectorChange,
     });
 
-    fireEvent.click(connectors()[1]);
+    await choose(connectors()[1], 'or');
 
     expect(onConnectorChange).toHaveBeenCalledExactlyOnceWith('or');
   });
 
-  it('flips back to and', () => {
+  it('flips back to and', async () => {
     const onConnectorChange = vi.fn();
     renderBar(twoFilters, { connector: 'or', onConnectorChange });
 
-    fireEvent.click(connectors()[0]);
+    await choose(connectors()[0], 'and');
 
     expect(onConnectorChange).toHaveBeenCalledWith('and');
   });

@@ -238,8 +238,8 @@ Filters with no value chosen yet are dropped rather than sent, so a half-configu
 
 ### and / or
 
-One connector governs the whole bar, shown as a pill between two filter chips
-— `and ⇄` or `or ⇄` — and flipped by clicking it. Mixing connectors per gap
+One connector governs the whole bar, shown as a small `and` / `or` dropdown
+between two filter chips. Mixing connectors per gap
 would make the row depend on precedence it cannot show; genuinely mixed logic
 wants nested groups, which need more room than a single row of chips has.
 

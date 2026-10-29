@@ -49,9 +49,8 @@ export function SortRow({
             maxWidth: '100px',
             fontWeight: 500,
             border: 'none',
-            borderRight: '1px solid var(--mantine-color-gray-3)',
-            borderRadius:
-              'var(--mantine-radius-sm) 0 0 var(--mantine-radius-sm)',
+            borderRight: '1px solid var(--mantine-color-gray-2)',
+            borderRadius: 0,
           },
         }}
         comboboxProps={{ offset: 4, width: 'max-content' }}
@@ -67,7 +66,7 @@ export function SortRow({
           onClick={() => updateSort(sort.id, { desc: !sort.desc })}
           style={{
             borderRadius: 0,
-            borderRight: '1px solid var(--mantine-color-gray-3)',
+            borderRight: '1px solid var(--mantine-color-gray-2)',
           }}
         >
           {sort.desc ? <IconArrowDown size={14} /> : <IconArrowUp size={14} />}
