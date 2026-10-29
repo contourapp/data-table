@@ -4,6 +4,7 @@ export { DataTableSkeleton } from './DataTableSkeleton.js';
 export { TableFilters } from './TableFilters.js';
 export { FilterRow } from './FilterRow.js';
 export { SortRow } from './SortRow.js';
+export { FilterConnectorToggle } from './FilterConnectorToggle.js';
 export type { ColumnSort } from './SortRow.js';
 
 export { ColumnFilterToggle } from './components/ColumnFilterToggle.js';
@@ -34,6 +35,8 @@ export type { Cell, Column, ColumnDef, Row } from './features.js';
 export {
   convertTableFiltersToGraphQL,
   createFilterForColumn,
+  DEFAULT_FILTER_CONNECTOR,
+  parseFilterConnector,
   deriveTableFieldMappingFromColumns,
   formatDateRangeValue,
   generateFilterId,
@@ -51,6 +54,7 @@ export type {
   ColumnType,
   CustomFilter,
   CustomFilterOption,
+  FilterConnector,
   FilterOperator,
   TableFilter,
   TableGraphQLFilter,
@@ -58,9 +62,11 @@ export type {
 
 export {
   SEARCH_PARAM_KEYS,
+  deriveFilterConnectorFromSearchParams,
   deriveSortingFromSearchParams,
   deriveTableFiltersFromSearchParams,
   hasMoreRows,
+  setSearchParamsFromFilterConnector,
   setSearchParamsFromSorting,
   setSearchParamsFromTableFilters,
 } from './tableHelpers.js';

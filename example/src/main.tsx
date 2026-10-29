@@ -8,6 +8,7 @@ import {
   DataTableConfigProvider,
   TableFilters,
   type DataTableColumnDef,
+  type FilterConnector,
   type TableFilter,
 } from '@contourapp/data-table';
 import type { SortingState } from '@tanstack/react-table';
@@ -104,6 +105,7 @@ const matches = (invoice: Invoice, filter: TableFilter) => {
 
 function App() {
   const [filters, setFilters] = useState<TableFilter[]>([]);
+  const [connector, setConnector] = useState<FilterConnector>('and');
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'status', desc: false },
   ]);
@@ -111,7 +113,9 @@ function App() {
 
   const rows = useMemo(() => {
     const filtered = data.filter((invoice) =>
-      filters.every((filter) => matches(invoice, filter)),
+      connector === 'and'
+        ? filters.every((filter) => matches(invoice, filter))
+        : filters.some((filter) => matches(invoice, filter)),
     );
 
     return [...filtered].sort((a, b) => {
@@ -124,7 +128,7 @@ function App() {
       }
       return 0;
     });
-  }, [filters, sorting]);
+  }, [filters, connector, sorting]);
 
   return (
     <MantineProvider>
@@ -139,6 +143,8 @@ function App() {
             columns={columns}
             filters={filters}
             onFiltersChange={setFilters}
+            connector={connector}
+            onConnectorChange={setConnector}
             sorting={sorting}
             onSortingChange={setSorting}
           />

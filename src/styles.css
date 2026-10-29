@@ -29,7 +29,6 @@
 .cdt-header-cell {
   display: flex;
   align-items: center;
-  gap: 2px;
   cursor: pointer;
   user-select: none;
   padding: var(--mantine-spacing-xs) var(--mantine-spacing-xs);
@@ -47,6 +46,23 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Sort and filter sit in one group, tight together and set apart from the
+   label, so proximity alone groups them — at 13px a divider between two
+   glyphs reads as noise, not structure.
+   Sort comes first: it is a state indicator and belongs beside the name it
+   describes, while the filter is a control and sits outboard. Both slots are
+   reserved on a column that supports them, so neither hovering a header nor
+   sorting one shifts anything — which is also why the order matters, since a
+   sorted-but-unfiltered column is the common case and this keeps its arrow
+   against the label rather than a blank slot out. */
+.cdt-header-indicators {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 1px;
+  margin-left: 6px;
 }
 
 /* Reserved on every sortable column, so sorting one never shifts its label.
@@ -79,29 +95,25 @@
   margin-left: 1px;
 }
 
-/* Out of the flow while the column is unfiltered, so an unused control costs
-   no width; in the flow once it is filtered, so it never covers the label it
-   belongs to. */
+/* Invisible until the header is hovered, and inert while invisible — a
+   control nobody can see should not be one they can hit. */
 .cdt-column-filter {
-  position: absolute;
-  /* Matches the cell's content edge, where the in-flow active state lands, so
-     the icon does not shift when a column is filtered or cleared. */
-  right: var(--mantine-spacing-xs);
+  flex: 0 0 auto;
   opacity: 0;
+  pointer-events: none;
   transition: opacity 120ms ease;
-  background-color: var(--mantine-color-body);
 }
 
 .cdt-header-cell:hover .cdt-column-filter,
 .cdt-column-filter:focus-visible {
   opacity: 1;
+  pointer-events: auto;
 }
 
+/* A filtered table is showing a subset of the data, so this one stays up. */
 .cdt-column-filter[data-active] {
-  position: static;
-  flex: 0 0 auto;
-  margin-left: auto;
   opacity: 1;
+  pointer-events: auto;
   color: var(--cdt-active-color, var(--mantine-primary-color-filled));
 }
 
@@ -198,6 +210,10 @@
   overflow-y: hidden;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  /* Fades the trailing edge so a clipped chip reads as "there is more", not as
+     a broken one. Chips pack left, so with room to spare this falls on empty
+     space and shows nothing. */
+  mask-image: linear-gradient(to right, #000 calc(100% - 16px), transparent);
 }
 
 .cdt-filter-bar-scroll::-webkit-scrollbar {
@@ -216,4 +232,23 @@
   background-color: var(--mantine-color-gray-0);
   border-right: 1px solid var(--mantine-color-gray-3);
   border-radius: var(--mantine-radius-sm) 0 0 var(--mantine-radius-sm);
+}
+
+/* Sits between two filter chips as the word joining them. Deliberately plain —
+   it is a connector, not a fourth chip, and should not compete with them. */
+.cdt-filter-connector {
+  flex: 0 0 auto;
+  padding: 2px 4px;
+  border-radius: var(--mantine-radius-sm);
+  font-size: var(--mantine-font-size-xs);
+  font-weight: 600;
+  color: var(--mantine-color-dimmed);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+}
+
+.cdt-filter-connector:hover {
+  background-color: var(--mantine-color-gray-1);
+  color: var(--mantine-color-text);
 }

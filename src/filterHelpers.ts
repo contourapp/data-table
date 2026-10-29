@@ -50,6 +50,16 @@ export const tableFilterSchema = z.object({
    */
   field: z.string().optional(),
 });
+const filterConnectorSchema = z.enum(['and', 'or']);
+
+/** How the toolbar's filters are joined together. */
+export type FilterConnector = z.infer<typeof filterConnectorSchema>;
+
+export const DEFAULT_FILTER_CONNECTOR: FilterConnector = 'and';
+
+export const parseFilterConnector = (value: unknown): FilterConnector =>
+  filterConnectorSchema.safeParse(value).data ?? DEFAULT_FILTER_CONNECTOR;
+
 export type ColumnType = z.infer<typeof columnTypeSchema>;
 export type FilterOperator = z.infer<typeof filterOperatorSchema>;
 export type TableFilter = z.infer<typeof tableFilterSchema>;

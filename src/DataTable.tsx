@@ -571,10 +571,12 @@ const DataTable = <TData extends object>({
                         header.getContext(),
                       )}
                 </Box>
-                {header.column.getCanSort() && (
-                  <SortIndicator column={header.column} />
-                )}
-                {renderFilterToggle(header.column.id)}
+                <Box className={styles.headerIndicators}>
+                  {header.column.getCanSort() && (
+                    <SortIndicator column={header.column} />
+                  )}
+                  {renderFilterToggle(header.column.id)}
+                </Box>
               </Box>
             )),
           )}

@@ -9,6 +9,7 @@ export const classNames = {
   headerRow: 'cdt-header-row',
   headerCell: 'cdt-header-cell',
   headerLabel: 'cdt-header-label',
+  headerIndicators: 'cdt-header-indicators',
   sortIndicator: 'cdt-sort-indicator',
   sortPosition: 'cdt-sort-position',
   columnFilter: 'cdt-column-filter',
@@ -21,4 +22,5 @@ export const classNames = {
   filterBar: 'cdt-filter-bar',
   filterBarScroll: 'cdt-filter-bar-scroll',
   chipIcon: 'cdt-chip-icon',
+  filterConnector: 'cdt-filter-connector',
 } as const;

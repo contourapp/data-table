@@ -18,7 +18,7 @@ import {
   IconX,
 } from '@tabler/icons-react';
 import type { SortingState } from '@tanstack/react-table';
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 
 import { classNames } from './classNames.js';
 import { DEFAULT_MAX_FILTERS, DEFAULT_MAX_SORTS } from './constants.js';
@@ -29,14 +29,17 @@ import {
   getSortableColumns,
 } from './columnHelpers.js';
 import type { DataTableColumnDef } from './DataTable.js';
+import { FilterConnectorToggle } from './FilterConnectorToggle.js';
 import {
   type CustomFilter,
   type CustomFilterOption,
+  type FilterConnector,
   type TableFilter,
   createFilterForColumn,
   getColumnType,
   getDefaultOperatorForColumn,
   getColumnField,
+  DEFAULT_FILTER_CONNECTOR,
 } from './filterHelpers.js';
 import { FilterRow } from './FilterRow.js';
 import { SortRow, type ColumnSort } from './SortRow.js';
@@ -49,6 +52,12 @@ interface TableFiltersProps<TData extends object> {
   customFilterOptions?: CustomFilterOption[];
   /** Upper bound on simultaneous column filters. */
   maxFilters?: number;
+  /**
+   * How the filters are joined. Omit `onConnectorChange` and the bar shows no
+   * connector; filters are ANDed, as they always were.
+   */
+  connector?: FilterConnector;
+  onConnectorChange?: (connector: FilterConnector) => void;
   /**
    * Sorting state, shown as chips alongside the filters. Pass the same state
    * you give `DataTable`; omitting `onSortingChange` keeps sorting out of the
@@ -71,6 +80,8 @@ export function TableFilters<TData extends object>({
   customFilters = EMPTY_CUSTOM_FILTERS,
   customFilterOptions = EMPTY_CUSTOM_FILTER_OPTIONS,
   maxFilters = DEFAULT_MAX_FILTERS,
+  connector = DEFAULT_FILTER_CONNECTOR,
+  onConnectorChange,
   sorting = EMPTY_SORTING,
   onSortingChange,
   maxSorts = DEFAULT_MAX_SORTS,
@@ -173,6 +184,7 @@ export function TableFilters<TData extends object>({
     onFiltersChange([]);
     customFilters.forEach((cf) => cf.onRemove());
     onSortingChange?.([]);
+    onConnectorChange?.(DEFAULT_FILTER_CONNECTOR);
   };
 
   const hasActiveControls =
@@ -298,15 +310,22 @@ export function TableFilters<TData extends object>({
               </Badge>
             ),
           )}
-          {filters.map((filter) => (
-            <FilterRow
-              key={filter.id}
-              filter={filter}
-              columnOptions={columnOptions}
-              updateFilter={updateFilter}
-              removeFilter={removeFilter}
-              filterableColumns={filterableColumns}
-            />
+          {filters.map((filter, index) => (
+            <Fragment key={filter.id}>
+              {index > 0 && onConnectorChange && (
+                <FilterConnectorToggle
+                  connector={connector}
+                  onChange={onConnectorChange}
+                />
+              )}
+              <FilterRow
+                filter={filter}
+                columnOptions={columnOptions}
+                updateFilter={updateFilter}
+                removeFilter={removeFilter}
+                filterableColumns={filterableColumns}
+              />
+            </Fragment>
           ))}
           {sorting.map((sort) => (
             <SortRow

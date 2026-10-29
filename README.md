@@ -5,7 +5,7 @@ A virtualized, filterable data table for React, built on [Mantine](https://manti
 Extracted from Contour, where it backs ~50 admin and reporting tables.
 
 - **One `<DataTable>`** covering sorting, row selection, expansion and sub-rows, grouping, row ordering by drag, row actions, detail panels, infinite scroll with virtualization, empty states and loading skeletons.
-- **A toolbar** (`<TableFilters>`) holding both filter and sort chips, built from your column defs, producing a typed GraphQL-shaped filter object and a TanStack `SortingState`.
+- **A toolbar** (`<TableFilters>`) holding both filter and sort chips, built from your column defs, producing a typed GraphQL-shaped filter object and a TanStack `SortingState`. Filters join with `and` or `or`.
 - **Headers that show their own state** — an arrow on sorted columns, a funnel on filtered ones, and a one-click toggle to filter a column, all costing nothing while unused.
 - **URL-synchronized state** — `useTableFilters` and `useTableSorting` keep filters and sorting in the query string, so a filtered table survives a reload or a shared link.
 - **CSS-grid layout**, not `<table>`, so column tracks, sticky headers and virtual rows stay consistent.
@@ -119,9 +119,23 @@ Each state is quiet until it means something:
 | filterable          | nothing; a faint outline funnel on hover, which adds a filter |
 | filtered            | a filled funnel in the accent colour, which removes it     |
 
-The sort slot is reserved on every sortable column, so sorting one never shifts
-its label, and the funnel only enters the header's flow once the column is
-actually filtered — an unused control costs a column no width.
+Both indicators share one group beside the label, never split across the cell,
+with a tight gap between them and a wider one from the label — proximity does
+the grouping, so no divider is needed. At 13px a rule between two glyphs reads
+as noise rather than structure; the chips use internal borders because those
+separate *controls*, which is a different job.
+
+Order is fixed everywhere, and it is not the same in both places on purpose:
+
+- **Headers** read sort, then filter. Sort is a state indicator and belongs
+  against the name it describes; the filter is a control and sits outboard.
+  This is also AG Grid's arrangement, and it keeps the common case — a sorted,
+  unfiltered column — with its arrow tight to the label.
+- **The toolbar** reads filters, then sorts, which is the order they are
+  applied in: filtering narrows the rows, then sorting arranges what is left.
+
+Both slots are reserved on a column that supports them, so neither hovering a
+header nor sorting one shifts anything.
 
 Sorting and filtering are different operations — one reorders rows, the other
 hides them — so they never share a glyph. The toolbar chips lead with the same
@@ -200,16 +214,38 @@ const { filter } = useTableFilters<InvoiceFilter>(searchParams);
 
 Filters with no value chosen yet are dropped rather than sent, so a half-configured filter never narrows a query. If your backend speaks a different dialect, read `tableFilters` directly and translate it yourself.
 
-**Every filter is ANDed.** `useTableFilters` emits a single `and` array and the
-toolbar offers no `or`; the emitted objects carry empty `and`/`or` slots only to
-satisfy a recursive GraphQL filter input. Note that `baseFilters` must stay
-ANDed whatever the user picks — they usually scope a query to an organization or
-a tenant, and folding them into an `or` would widen it rather than narrow it:
+### and / or
+
+One connector governs the whole bar, shown as the word between two filter
+chips and flipped by clicking it. Mixing connectors per gap would make the row
+depend on precedence it cannot show; genuinely mixed logic wants nested groups,
+which need more room than a single row of chips has.
+
+```tsx
+const { tableFilters, setTableFilters, filterConnector, setFilterConnector, filter } =
+  useTableFilters(searchParams);
+
+<TableFilters
+  /* ... */
+  connector={filterConnector}
+  onConnectorChange={setFilterConnector}
+/>;
+```
+
+Omit `onConnectorChange` and no connector appears; filters are ANDed, as
+before. The choice rides in its own `tableFiltersConnector` search param, and
+only when it is `or`, so links already written against a plain `tableFilters`
+array keep working.
+
+**`baseFilters` stay ANDed whatever the user picks.** They scope a query — to
+an organization, a tenant — so folding them into the same `or` would widen the
+result rather than narrow it:
 
 ```ts
-// if OR is ever added, this is the shape, not `{ or: [...everything] }`
-{ and: [...baseFilters, { or: userFilters }] }
+{ and: [...baseFilters, { or: userFilters }] }   // not { or: [...everything] }
 ```
+
+A single filter is never wrapped, since `or` over one condition means nothing.
 
 ## Development
 

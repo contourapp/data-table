@@ -12,12 +12,16 @@ import {
 } from 'react';
 
 import {
+  DEFAULT_FILTER_CONNECTOR,
+  type FilterConnector,
   type TableFilter,
   type TableGraphQLFilter,
   convertTableFiltersToGraphQL,
 } from '../filterHelpers.js';
 import {
+  setSearchParamsFromFilterConnector,
   setSearchParamsFromTableFilters,
+  deriveFilterConnectorFromSearchParams,
   deriveTableFiltersFromSearchParams,
 } from '../tableHelpers.js';
 
@@ -37,11 +41,21 @@ export function useTableFilters<T = TableGraphQLFilter>(
   const [tableFilters, setTableFiltersState] = useState<TableFilter[]>(
     searchParams ? deriveTableFiltersFromSearchParams(searchParams) : [],
   );
+  const [filterConnector, setFilterConnectorState] = useState<FilterConnector>(
+    searchParams
+      ? deriveFilterConnectorFromSearchParams(searchParams)
+      : DEFAULT_FILTER_CONNECTOR,
+  );
   // The derived `filter` commonly feeds a suspense-enabled query's variables;
   // updating it outside a transition re-suspends the page into its fallback.
   const [, startTransition] = useTransition();
   const setTableFilters = useCallback<Dispatch<SetStateAction<TableFilter[]>>>(
     (action) => startTransition(() => setTableFiltersState(action)),
+    [startTransition],
+  );
+  const setFilterConnector = useCallback(
+    (connector: FilterConnector) =>
+      startTransition(() => setFilterConnectorState(connector)),
     [startTransition],
   );
 
@@ -56,8 +70,9 @@ export function useTableFilters<T = TableGraphQLFilter>(
     if (typeof window === 'undefined') return;
     const urlSearchParams = new URLSearchParams(window.location.search);
     setSearchParamsFromTableFilters(tableFilters, urlSearchParams);
+    setSearchParamsFromFilterConnector(filterConnector, urlSearchParams);
     window.history.replaceState(null, '', `?${urlSearchParams.toString()}`);
-  }, [tableFilters]);
+  }, [tableFilters, filterConnector]);
 
   // Memoized so the returned `filter` keeps a stable identity across renders.
   // Callers pass it straight into query variables; a fresh object every render
@@ -65,15 +80,26 @@ export function useTableFilters<T = TableGraphQLFilter>(
   // base filter means `filter` is never undefined).
   const filter = useMemo(() => {
     const graphQLFilters = convertTableFiltersToGraphQL<T>(tableFilters);
+    // `or` wraps only the user's own filters. Base filters scope the query —
+    // to an organization, a tenant — so folding them into the same `or` would
+    // widen the result instead of narrowing it. They stay ANDed regardless of
+    // what the user picks. One filter needs no wrapper either way.
+    const userFilters =
+      filterConnector === 'or' && graphQLFilters.length > 1
+        ? // SAFETY: `or` is part of the recursive filter input the caller pairs T with.
+          [{ or: graphQLFilters } as T]
+        : graphQLFilters;
     const allFilters = baseFilters
-      ? [...baseFilters, ...graphQLFilters]
-      : graphQLFilters;
+      ? [...baseFilters, ...userFilters]
+      : userFilters;
     return allFilters.length > 0 ? { and: allFilters } : undefined;
-  }, [tableFilters, baseFilters]);
+  }, [tableFilters, filterConnector, baseFilters]);
 
   return {
     tableFilters,
     setTableFilters,
+    filterConnector,
+    setFilterConnector,
     filter,
   };
 }
