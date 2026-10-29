@@ -280,6 +280,18 @@
   box-shadow: inset -2px 0 0 var(--mantine-primary-color-filled);
 }
 
+/* A chip in a drag says one thing: where the drop lands. The per-field hover
+   tint would otherwise fire under the drag cursor and read as a second,
+   competing state on the chip being passed. */
+.cdt-chip[data-dragging] .cdt-chip-field,
+.cdt-chip[data-drop-before] .cdt-chip-field,
+.cdt-chip[data-drop-after] .cdt-chip-field,
+.cdt-chip[data-dragging] .cdt-chip-button,
+.cdt-chip[data-drop-before] .cdt-chip-button,
+.cdt-chip[data-drop-after] .cdt-chip-button {
+  background-color: transparent;
+}
+
 /* Widths come in per field as custom properties; everything else is uniform.
    A field is as wide as the words in it, clamped at both ends — a text input
    has no intrinsic width, and left to reserve its widest case every segment
