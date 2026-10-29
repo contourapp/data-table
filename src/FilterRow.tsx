@@ -8,7 +8,7 @@ import {
 } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
 import { IconX } from '@tabler/icons-react';
-import { useEffect, useRef, useState } from 'react';
+import { type CSSProperties, useEffect, useRef, useState } from 'react';
 
 import { classNames } from './classNames.js';
 import type { DataTableColumnDef } from './DataTable.js';
@@ -84,6 +84,35 @@ const needsValue = (operator: FilterOperator) => {
   return !['isEmpty', 'isNotEmpty'].includes(operator);
 };
 
+/**
+ * One segment of a chip. Widths ride in as custom properties so the stylesheet
+ * owns every other pixel — a chip is one token, and internal rules between its
+ * segments made it read as three stacked controls.
+ *
+ * `text` is what the segment currently shows. A text input has no intrinsic
+ * width, so without it every segment reserves its widest case and a chip holding
+ * `Owner contains Delgado` sprawls over twice the room the words need. Measuring
+ * in `ch` is an approximation on a proportional face, which is what the clamp in
+ * `styles.css` is for.
+ */
+const chipField = (
+  text: string,
+  { min, max, className }: { min: string; max: string; className?: string },
+) => ({
+  size: 'xs' as const,
+  variant: 'unstyled' as const,
+  classNames: {
+    input: className
+      ? `${classNames.chipField} ${className}`
+      : classNames.chipField,
+  },
+  style: {
+    '--cdt-field-min': min,
+    '--cdt-field-max': max,
+    '--cdt-field-ch': text.length,
+  } as CSSProperties,
+});
+
 export function FilterRow<TData extends object>({
   filter,
   columnOptions,
@@ -104,24 +133,16 @@ export function FilterRow<TData extends object>({
       return null;
     }
 
-    const commonProps = {
-      size: 'xs' as const,
-      styles: {
-        input: {
-          minWidth: '100px',
-          maxWidth: '120px',
-          border: 'none',
-          borderRight: '1px solid var(--mantine-color-gray-2)',
-          borderRadius: 0,
-        },
-      },
-    };
+    const commonProps = chipField(String(value ?? ''), {
+      min: '64px',
+      max: '160px',
+    });
 
     if (colType === 'date-range') {
       const [startStr, endStr] = parseDateRangeValue(value);
       return (
         <DatePickerInput
-          size="xs"
+          {...chipField('', { min: '220px', max: '260px' })}
           type="range"
           placeholder="Select dates"
           value={[startStr ?? null, endStr ?? null]}
@@ -135,15 +156,6 @@ export function FilterRow<TData extends object>({
             });
           }}
           valueFormat="MMM DD, YYYY"
-          styles={{
-            input: {
-              minWidth: '220px',
-              maxWidth: '260px',
-              border: 'none',
-              borderRight: '1px solid var(--mantine-color-gray-2)',
-              borderRadius: 0,
-            },
-          }}
         />
       );
     }
@@ -223,29 +235,28 @@ export function FilterRow<TData extends object>({
   return (
     <Group gap={0} wrap="nowrap" className={classNames.chip}>
       <Select
-        size="xs"
+        {...chipField(
+          columnOptions.find((option) => option.value === filter.columnId)
+            ?.label ?? filter.columnId,
+          { min: '52px', max: '140px', className: classNames.chipColumn },
+        )}
         aria-label="Filter column"
         data={columnOptions}
         value={filter.columnId}
         onChange={(value) =>
           value && updateFilter(filter.id, { columnId: value })
         }
-        styles={{
-          input: {
-            minWidth: '80px',
-            maxWidth: '100px',
-            fontWeight: 500,
-            border: 'none',
-            borderRight: '1px solid var(--mantine-color-gray-2)',
-            borderRadius: 0,
-          },
-        }}
         comboboxProps={{ offset: 4, width: 'max-content' }}
         rightSection={null}
       />
       {columnType !== 'date-range' && (
         <Select
-          size="xs"
+          {...chipField(
+            operators.find((operator) => operator.value === filter.operator)
+              ?.label ?? filter.operator,
+            { min: '52px', max: '120px', className: classNames.chipOperator },
+          )}
+          aria-label="Filter operator"
           data={operators}
           value={filter.operator}
           onChange={(value) =>
@@ -254,15 +265,6 @@ export function FilterRow<TData extends object>({
               operator: value,
             })
           }
-          styles={{
-            input: {
-              minWidth: '70px',
-              maxWidth: '100px',
-              border: 'none',
-              borderRight: '1px solid var(--mantine-color-gray-2)',
-              borderRadius: 0,
-            },
-          }}
           comboboxProps={{ offset: 4, width: 'max-content' }}
           rightSection={null}
         />
@@ -273,13 +275,10 @@ export function FilterRow<TData extends object>({
         size="sm"
         variant="subtle"
         color="gray"
-        h="30px"
+        className={classNames.chipButton}
         onClick={() => removeFilter(filter.id)}
-        style={{
-          borderRadius: 0,
-        }}
       >
-        <IconX size={14} />
+        <IconX size={13} />
       </ActionIcon>
     </Group>
   );

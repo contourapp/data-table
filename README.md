@@ -123,16 +123,15 @@ Each state is quiet until it means something:
 | Column is           | Header shows                                              |
 | ------------------- | --------------------------------------------------------- |
 | sortable, unsorted  | nothing; a faint `⇅` on hover                              |
-| sorted              | `↑` or `↓` in the accent colour, beside the label          |
+| sorted              | `↑` or `↓` beside the label                                |
 | sorted, among many  | the same arrow with its position, so `↑1` leads `↓2`       |
 | filterable          | nothing; a faint outline funnel on hover, which adds a filter |
-| filtered            | a filled funnel in the accent colour, which removes it     |
+| filtered            | a solid funnel, which removes it                           |
 
 Both indicators share one group beside the label, never split across the cell,
 with a tight gap between them and a wider one from the label — proximity does
 the grouping, so no divider is needed. At 13px a rule between two glyphs reads
-as noise rather than structure; the chips use internal borders because those
-separate *controls*, which is a different job.
+as noise rather than structure.
 
 Order is fixed everywhere, and it is not the same in both places on purpose:
 
@@ -158,10 +157,17 @@ once, so no single cue has to carry it:
    column, operator, value. A sort is a column and a direction, and its chip is
    a column plus an arrow button that flips it — the same arrow its header
    shows.
-4. **Weighted.** A filter hides rows, so filter indicators take the accent
-   colour (`--cdt-filter-color`). A sort only reorders them, so sort
-   indicators stay the text colour (`--cdt-sort-color`). Same rule in the
-   headers: accent funnel, neutral arrow.
+4. **Filled.** A funnel is hollow while it is only an affordance and solid once
+   the column is filtered, so "this column is hiding rows" is legible without
+   reading the toolbar.
+
+Neither takes an accent colour by default: both sit at the text colour, so a
+header reads as a header. Set `--cdt-filter-color` or `--cdt-sort-color` to
+accent either one.
+
+A chip is as wide as the words in it and never shrinks below them. If a group
+outgrows its row it scrolls sideways and the edge that is hiding a chip fades,
+rather than every chip squeezing until one loses the column it names.
 
 Sorts apply in chip order, so in `Status ascending, Amount descending` the
 amount breaks ties within a status. Clicking a header **replaces** the sort,
@@ -217,7 +223,7 @@ Colours and spacing come from Mantine CSS variables, so the table inherits the h
 | Variable                    | Default              | Effect                                 |
 | --------------------------- | -------------------- | -------------------------------------- |
 | `--table-border-color`      | `--mantine-color-gray-3` | Header and row borders.            |
-| `--cdt-filter-color`        | `--mantine-primary-color-filled` | Active filter indicators, toolbar and headers. |
+| `--cdt-filter-color`        | `--mantine-color-text`   | Active filter indicators, toolbar and headers. |
 | `--cdt-sort-color`          | `--mantine-color-text`   | Active sort indicators, toolbar and headers. |
 | `--tr-hover-bg`             | `--mantine-color-gray-0` | Row hover background.              |
 | `--app-shell-header-height` | `0px`                | Subtracted from the default full-height table. |
@@ -238,8 +244,9 @@ Filters with no value chosen yet are dropped rather than sent, so a half-configu
 
 ### and / or
 
-One connector governs the whole bar, shown as a small `and` / `or` dropdown
-between two filter chips. Mixing connectors per gap
+One connector governs the whole bar, shown as a small `AND` / `OR` dropdown
+between two filter chips. (The label is uppercased in the stylesheet; the value,
+the search param and the emitted filter all stay lowercase.) Mixing connectors per gap
 would make the row depend on precedence it cannot show; genuinely mixed logic
 wants nested groups, which need more room than a single row of chips has.
 

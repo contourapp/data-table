@@ -6,13 +6,15 @@
  * the host theme. A few variables are table-specific and may be overridden:
  *   --table-border-color  row and header borders (default: gray-3)
  *   --tr-hover-bg         row hover background  (default: gray-0)
- *   --cdt-filter-color    active filter indicators (default: primary)
+ *   --cdt-filter-color    active filter indicators (default: text)
  *   --cdt-sort-color      active sort indicators   (default: text)
  *   --app-shell-header-height  subtracted from the default full-height table
  *
- * Filters and sorts are kept visibly different throughout. A filter hides
- * rows, so its indicators take the accent colour; a sort only reorders them,
- * so its indicators stay the text colour.
+ * Filters and sorts are kept visibly different throughout, by shape rather
+ * than by hue: a filter is a funnel, hollow until it is doing something and
+ * solid once it is, and a sort is a direction arrow. Both sit at the text
+ * colour so a header reads as a header; set the two variables above to
+ * accent either.
  */
 
 .cdt-container {
@@ -98,7 +100,9 @@
   font-size: 10px;
   font-weight: 700;
   line-height: 1;
-  margin-left: 1px;
+  /* Pulls the number against its arrow, past the padding inside the glyph's
+     own box — the two are one indicator, not an arrow and a stray digit. */
+  margin-left: -2px;
 }
 
 /* Invisible until the header is hovered, and inert while invisible — a
@@ -116,11 +120,12 @@
   pointer-events: auto;
 }
 
-/* A filtered table is showing a subset of the data, so this one stays up. */
+/* A filtered table is showing a subset of the data, so this one stays up —
+   filled, where the hover affordance is hollow. */
 .cdt-column-filter[data-active] {
   opacity: 1;
   pointer-events: auto;
-  color: var(--cdt-filter-color, var(--mantine-primary-color-filled));
+  color: var(--cdt-filter-color, var(--mantine-color-text));
 }
 
 .cdt-header-cell[data-sortable='false'] {
@@ -222,11 +227,85 @@
   gap: 6px var(--mantine-spacing-sm);
 }
 
-/* Clipped so a control's hover fill stays inside the rounded corners. */
+/* One token, not three stacked controls: a single outline around the whole
+   expression with no rules between its parts. The segments are told apart by
+   weight and colour instead — the column carries the emphasis, the operator
+   recedes — which is what keeps a chip readable as a sentence. Clipped so a
+   segment's hover fill stays inside the rounded corners. */
 .cdt-chip {
+  display: flex;
+  align-items: center;
+  /* Rigid, so a cramped row scrolls its group rather than crushing a chip.
+     Shrinking one silently drops the column name off the end of the
+     expression, leaving a filter the bar can no longer name. */
+  flex: 0 0 auto;
+  height: 30px;
   border: 1px solid var(--mantine-color-gray-3);
-  border-radius: var(--mantine-radius-sm);
+  border-radius: 6px;
+  background-color: var(--mantine-color-body);
   overflow: hidden;
+}
+
+.cdt-chip:focus-within {
+  border-color: var(--mantine-color-gray-4);
+}
+
+/* Widths come in per field as custom properties; everything else is uniform.
+   A field is as wide as the words in it, clamped at both ends — a text input
+   has no intrinsic width, and left to reserve its widest case every segment
+   padded the chip out to roughly twice the room its content needs. */
+.cdt-chip-field {
+  width: calc(var(--cdt-field-ch, 10) * 1ch + 26px);
+  min-width: var(--cdt-field-min, 60px);
+  max-width: var(--cdt-field-max, 140px);
+  height: 28px;
+  min-height: 28px;
+  padding-inline: 8px;
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-text);
+  border-radius: 0;
+  transition: background-color 100ms ease;
+}
+
+.cdt-chip-field:hover,
+.cdt-chip-field:focus {
+  background-color: var(--mantine-color-gray-0);
+  outline: none;
+}
+
+/* The column is what the chip is about, so it carries the emphasis; the
+   operator is grammar between it and the value, so it recedes. */
+.cdt-chip-column {
+  font-weight: 600;
+  /* Bolder than the `ch` the estimate is built on, so it needs the slack. */
+  width: calc(var(--cdt-field-ch, 10) * 1.1ch + 26px);
+}
+
+/* Where the browser can measure the content itself, let it: the `ch` estimate
+   above has to run wide enough never to clip a proportional face, and this
+   gives back the slack it leaves behind. */
+@supports (field-sizing: content) {
+  .cdt-chip-field,
+  .cdt-chip-column {
+    field-sizing: content;
+    width: auto;
+  }
+}
+
+.cdt-chip-operator {
+  color: var(--mantine-color-dimmed);
+}
+
+.cdt-chip-button {
+  flex: 0 0 auto;
+  height: 28px;
+  border-radius: 0;
+}
+
+/* The direction arrow is the chip's state, not a dismissal, so it matches the
+   header indicator's colour rather than sitting at the X's weight. */
+.cdt-chip-button[data-direction] {
+  color: var(--cdt-sort-color, var(--mantine-color-text));
 }
 
 /* Filters and sorts are separate groups, each led by its glyph and divided
@@ -239,10 +318,30 @@
   overflow-y: hidden;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  /* Fades the trailing edge so a clipped chip reads as "there is more", not as
-     a broken one. Chips pack left, so with room to spare this falls on empty
-     space and shows nothing. */
-  mask-image: linear-gradient(to right, #000 calc(100% - 16px), transparent);
+}
+
+/* Fades whichever edge is actually hiding something, so a clipped chip reads
+   as "there is more" rather than as a broken one — and only then: the box
+   shrink-wraps its chips, so an unconditional mask washes out the last one's
+   controls with the whole row to spare. `TableFilters` sets the attributes
+   from the scroll position, which is why both sides are covered: the group
+   scrolls to follow focus, and the hidden chip is then behind, not ahead. */
+.cdt-toolbar-group[data-overflow-end]:not([data-overflow-start]) {
+  mask-image: linear-gradient(to right, #000 calc(100% - 20px), transparent);
+}
+
+.cdt-toolbar-group[data-overflow-start]:not([data-overflow-end]) {
+  mask-image: linear-gradient(to right, transparent, #000 20px);
+}
+
+.cdt-toolbar-group[data-overflow-start][data-overflow-end] {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 20px,
+    #000 calc(100% - 20px),
+    transparent
+  );
 }
 
 .cdt-toolbar-group::-webkit-scrollbar {
@@ -257,7 +356,7 @@
 }
 
 .cdt-toolbar-group[data-kind='filter'] .cdt-toolbar-group-icon {
-  color: var(--cdt-filter-color, var(--mantine-primary-color-filled));
+  color: var(--cdt-filter-color, var(--mantine-color-text));
 }
 
 .cdt-toolbar-divider {
@@ -272,22 +371,52 @@
   display: none;
 }
 
-/* Sits between two filter chips as the word joining them: a plain dropdown,
-   lighter than a chip so it reads as the joint and not a third condition. */
+/* Sits between two filter chips as the word joining them: one small token,
+   lighter than a chip so it reads as the joint and not a third condition. Its
+   width is the word's, so the chevron stays against it. */
 .cdt-filter-connector {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
   flex: 0 0 auto;
-  width: 52px;
-}
-
-/* Sized to the word, so the chevron sits against it rather than a field away. */
-.cdt-filter-connector input {
-  padding-left: 6px;
-  padding-right: 18px;
-  font-weight: 500;
+  height: 22px;
+  padding-inline: 6px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--mantine-color-dimmed);
   cursor: pointer;
+  transition:
+    background-color 100ms ease,
+    color 100ms ease;
 }
 
-.cdt-filter-connector:hover input {
+.cdt-filter-connector:hover,
+.cdt-filter-connector[aria-expanded='true'] {
+  background-color: var(--mantine-color-gray-1);
   color: var(--mantine-color-text);
+}
+
+.cdt-filter-connector-menu [role='option'] {
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.cdt-filter-connector:focus-visible {
+  outline: 2px solid var(--mantine-primary-color-filled);
+  outline-offset: 1px;
+}
+
+/* Keeps the two icon buttons off the chips while the bar is one row, and
+   anchored to the top once it is two. */
+.cdt-toolbar-actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding-left: var(--mantine-spacing-xs);
 }

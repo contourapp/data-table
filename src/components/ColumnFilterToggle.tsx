@@ -18,6 +18,10 @@ interface ColumnFilterToggleProps {
  * an unused control costs a column no width. Once the column is filtered it
  * moves into the flow and stays visible — a filtered table is showing a subset
  * of the data, which the header should say outright rather than on hover.
+ *
+ * Hollow against solid is what says which of those two it is; `styles.css`
+ * owns the colour, so a host can accent the active state through
+ * `--cdt-filter-color` without the button's own prop fighting it.
  */
 export function ColumnFilterToggle({
   columnLabel,
@@ -35,7 +39,7 @@ export function ColumnFilterToggle({
         aria-pressed={isFiltered}
         size="xs"
         variant="subtle"
-        color={isFiltered ? undefined : 'gray'}
+        color="gray"
         className={classNames.columnFilter}
         data-active={isFiltered || undefined}
         onClick={(event) => {

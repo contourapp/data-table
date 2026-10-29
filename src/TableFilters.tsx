@@ -12,7 +12,6 @@ import {
 } from '@mantine/core';
 import {
   IconArrowsSort,
-  IconClearAll,
   IconFilter,
   IconFilterFilled,
   IconPlus,
@@ -69,6 +68,18 @@ interface TableFiltersProps<TData extends object> {
   /** Upper bound on simultaneous sorts. */
   maxSorts?: number;
 }
+
+/**
+ * Marks which edges of a scrolling group are hiding a chip, for the fade in
+ * `styles.css`. Only an edge with something behind it gets one: the group
+ * shrink-wraps its chips, so a mask that is always on washes out the last
+ * chip's controls even with the whole row to spare.
+ */
+const markOverflow = (group: HTMLElement) => {
+  const max = group.scrollWidth - group.clientWidth;
+  group.toggleAttribute('data-overflow-start', group.scrollLeft > 1);
+  group.toggleAttribute('data-overflow-end', group.scrollLeft < max - 1);
+};
 
 const EMPTY_CUSTOM_FILTERS: CustomFilter[] = [];
 const EMPTY_CUSTOM_FILTER_OPTIONS: CustomFilterOption[] = [];
@@ -201,29 +212,44 @@ export function TableFilters<TData extends object>({
     const parent = bar?.parentElement;
     if (!bar || !parent) return;
 
+    const groups = [
+      ...bar.querySelectorAll<HTMLElement>(`.${classNames.toolbarGroup}`),
+    ];
+
     const publish = () => {
       parent.style.setProperty('--cdt-toolbar-height', `${bar.offsetHeight}px`);
       // Wrapping changes the bar's height, so this fires exactly when the
       // divider between the groups would be left dangling at a row's edge.
-      const groups = bar.querySelectorAll<HTMLElement>(
-        `.${classNames.toolbarGroup}`,
-      );
       const wrapped =
         groups.length === 2 && groups[1].offsetTop > groups[0].offsetTop;
       bar
         .querySelector<HTMLElement>(`.${classNames.toolbarRows}`)
         ?.toggleAttribute('data-wrapped', wrapped);
+      groups.forEach(markOverflow);
     };
     publish();
     const observer = new ResizeObserver(publish);
     observer.observe(bar);
+    // A chip can come or go without the bar resizing, which changes only how
+    // far the group overflows.
+    groups.forEach((group) => observer.observe(group));
+
+    const onScroll = (event: Event) => markOverflow(event.currentTarget as HTMLElement);
+    groups.forEach((group) => group.addEventListener('scroll', onScroll));
 
     return () => {
       observer.disconnect();
+      groups.forEach((group) => group.removeEventListener('scroll', onScroll));
       parent.style.removeProperty('--cdt-toolbar-height');
     };
-    // Re-subscribes when the bar switches between its empty and active roots.
-  }, [hasActiveControls]);
+    // Re-subscribes when the bar switches between its empty and active roots,
+    // and whenever a group gains or loses a chip.
+  }, [
+    hasActiveControls,
+    filters.length,
+    customFilters.length,
+    sorting.length,
+  ]);
 
   const filterMenuItems = (
     <>
@@ -406,7 +432,7 @@ export function TableFilters<TData extends object>({
             </Group>
           )}
         </Box>
-        <ActionIcon.Group style={{ flexShrink: 0 }}>
+        <Box className={classNames.toolbarActions}>
           {showAddMenu && (
             <Menu
               opened={isAddMenuOpen}
@@ -443,17 +469,15 @@ export function TableFilters<TData extends object>({
               </Menu.Dropdown>
             </Menu>
           )}
-          <Tooltip label="Clear all">
-            <ActionIcon
-              aria-label="Clear all"
-              variant="subtle"
-              color="gray"
-              onClick={clearAll}
-            >
-              <IconClearAll size={16} />
-            </ActionIcon>
-          </Tooltip>
-        </ActionIcon.Group>
+          <Button
+            variant="subtle"
+            color="gray"
+            size="compact-xs"
+            onClick={clearAll}
+          >
+            Clear all
+          </Button>
+        </Box>
       </Group>
     </Box>
   );

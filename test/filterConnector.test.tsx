@@ -59,7 +59,7 @@ describe('filter connector in the toolbar', () => {
     renderBar(twoFilters, { connector: 'and', onConnectorChange: vi.fn() });
 
     expect(connectors()).toHaveLength(1);
-    expect(connectors()[0]).toHaveValue('and');
+    expect(connectors()[0]).toHaveTextContent('and');
   });
 
   it('shows one fewer connector than filters', () => {

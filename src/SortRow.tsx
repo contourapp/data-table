@@ -3,6 +3,7 @@
 import { ActionIcon, Group, Select, Tooltip } from '@mantine/core';
 import { IconArrowDown, IconArrowUp, IconX } from '@tabler/icons-react';
 import type { SortingState } from '@tanstack/react-table';
+import type { CSSProperties } from 'react';
 
 import { classNames } from './classNames.js';
 
@@ -39,20 +40,21 @@ export function SortRow({
     <Group gap={0} wrap="nowrap" className={classNames.chip}>
       <Select
         size="xs"
+        variant="unstyled"
         aria-label="Sort column"
+        classNames={{
+          input: `${classNames.chipField} ${classNames.chipColumn}`,
+        }}
+        style={
+          {
+            '--cdt-field-min': '52px',
+            '--cdt-field-max': '140px',
+            '--cdt-field-ch': columnLabel.length,
+          } as CSSProperties
+        }
         data={columnOptions}
         value={sort.id}
         onChange={(value) => value && updateSort(sort.id, { id: value })}
-        styles={{
-          input: {
-            minWidth: '80px',
-            maxWidth: '100px',
-            fontWeight: 500,
-            border: 'none',
-            borderRight: '1px solid var(--mantine-color-gray-2)',
-            borderRadius: 0,
-          },
-        }}
         comboboxProps={{ offset: 4, width: 'max-content' }}
         rightSection={null}
       />
@@ -62,14 +64,11 @@ export function SortRow({
           size="sm"
           variant="subtle"
           color="gray"
-          h="30px"
+          className={classNames.chipButton}
+          data-direction
           onClick={() => updateSort(sort.id, { desc: !sort.desc })}
-          style={{
-            borderRadius: 0,
-            borderRight: '1px solid var(--mantine-color-gray-2)',
-          }}
         >
-          {sort.desc ? <IconArrowDown size={14} /> : <IconArrowUp size={14} />}
+          {sort.desc ? <IconArrowDown size={13} /> : <IconArrowUp size={13} />}
         </ActionIcon>
       </Tooltip>
       <ActionIcon
@@ -77,11 +76,10 @@ export function SortRow({
         size="sm"
         variant="subtle"
         color="gray"
-        h="30px"
+        className={classNames.chipButton}
         onClick={() => removeSort(sort.id)}
-        style={{ borderRadius: 0 }}
       >
-        <IconX size={14} />
+        <IconX size={13} />
       </ActionIcon>
     </Group>
   );
