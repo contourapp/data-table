@@ -6,7 +6,7 @@ export { FilterRow } from './FilterRow.js';
 export { SortRow } from './SortRow.js';
 export type { ColumnSort } from './SortRow.js';
 
-export { ColumnMenu } from './components/ColumnMenu.js';
+export { ColumnFilterToggle } from './components/ColumnFilterToggle.js';
 export { DragHandle } from './components/DragHandle.js';
 export { EmptyState } from './components/EmptyState.js';
 export { ExpandAllButton } from './components/ExpandAllButton.js';

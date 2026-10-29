@@ -14,7 +14,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import type { DragEvent, ReactNode, UIEvent } from 'react';
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 
-import { ColumnMenu } from './components/ColumnMenu.js';
+import { ColumnFilterToggle } from './components/ColumnFilterToggle.js';
 import { DragHandle } from './components/DragHandle.js';
 import { EmptyState } from './components/EmptyState.js';
 import { ExpandButton } from './components/ExpandButton.js';
@@ -22,7 +22,11 @@ import { FetchMoreProgress } from './components/LoadingOverlay.js';
 import { SelectCheckbox } from './components/SelectCheckbox.js';
 import { SortIndicator } from './components/SortIndicator.js';
 import { classNames as styles } from './classNames.js';
-import { getColumnId, getFilterableColumns } from './columnHelpers.js';
+import {
+  getColumnId,
+  getColumnLabel,
+  getFilterableColumns,
+} from './columnHelpers.js';
 import { useDataTableConfig } from './config.js';
 import { DEFAULT_MAX_FILTERS } from './constants.js';
 import { createFilterForColumn, type TableFilter } from './filterHelpers.js';
@@ -162,18 +166,47 @@ const DataTable = <TData extends object>({
   const showActions = !!rowActions;
   const showDrag = enableRowOrdering;
 
-  const filterableColumnIds = new Set(
-    getFilterableColumns(columns)
-      .map(getColumnId)
-      .filter((id): id is string => !!id),
+  const filterableColumns = new Map(
+    getFilterableColumns(columns).flatMap((column) => {
+      const columnId = getColumnId(column);
+      return columnId ? [[columnId, column] as const] : [];
+    }),
   );
 
-  const addFilterForColumn = (columnId: string) => {
-    const column = columns.find((col) => getColumnId(col) === columnId);
+  const toggleFilterForColumn = (columnId: string) => {
+    const existing = tableFilters.filter(
+      (filter) => filter.columnId === columnId,
+    );
+    if (existing.length > 0) {
+      onTableFiltersChange?.(
+        tableFilters.filter((filter) => filter.columnId !== columnId),
+      );
+      return;
+    }
+
     onTableFiltersChange?.([
       ...tableFilters,
-      createFilterForColumn(column, columnId),
+      createFilterForColumn(filterableColumns.get(columnId), columnId),
     ]);
+  };
+
+  const renderFilterToggle = (columnId: string) => {
+    const column = filterableColumns.get(columnId);
+    if (!column || !onTableFiltersChange) return null;
+
+    const isFiltered = tableFilters.some(
+      (filter) => filter.columnId === columnId,
+    );
+    // At the cap, the only useful action left on an unfiltered column is none.
+    if (!isFiltered && tableFilters.length >= maxFilters) return null;
+
+    return (
+      <ColumnFilterToggle
+        columnLabel={getColumnLabel(column)}
+        isFiltered={isFiltered}
+        onToggle={() => toggleFilterForColumn(columnId)}
+      />
+    );
   };
 
   const gridTemplateParts: string[] = [];
@@ -530,26 +563,18 @@ const DataTable = <TData extends object>({
                 data-sortable={header.column.getCanSort()}
                 onClick={header.column.getToggleSortingHandler()}
               >
-                {header.isPlaceholder
-                  ? null
-                  : flexRender(
-                      header.column.columnDef.header,
-                      header.getContext(),
-                    )}
+                <Box className={styles.headerLabel}>
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
+                </Box>
                 {header.column.getCanSort() && (
                   <SortIndicator column={header.column} />
                 )}
-                <ColumnMenu
-                  column={header.column}
-                  canSort={header.column.getCanSort()}
-                  onAddFilter={
-                    filterableColumnIds.has(header.column.id) &&
-                    onTableFiltersChange &&
-                    tableFilters.length < maxFilters
-                      ? () => addFilterForColumn(header.column.id)
-                      : undefined
-                  }
-                />
+                {renderFilterToggle(header.column.id)}
               </Box>
             )),
           )}

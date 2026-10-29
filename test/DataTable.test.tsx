@@ -100,3 +100,53 @@ describe('DataTable row navigation', () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 });
+
+describe('sort indicators', () => {
+  // Both sortable, unlike the shared fixture, so a multi-column sort has two
+  // indicators to number.
+  const sortableColumns: DataTableColumnDef<Row>[] = [
+    { id: 'name', accessorKey: 'name', header: 'Name' },
+    { id: 'id', accessorKey: 'id', header: 'Id' },
+  ];
+
+  const renderSortable = (sorting: SortingState) =>
+    renderWithMantine(
+      <DataTable
+        dataType="rows"
+        columns={sortableColumns}
+        data={data}
+        sorting={sorting}
+        onSortingChange={vi.fn()}
+      />,
+    );
+
+  const positions = () =>
+    [...document.querySelectorAll('.cdt-sort-position')].map(
+      (el) => el.textContent,
+    );
+
+  it('marks only the sorted column', () => {
+    renderSortable([{ id: 'name', desc: false }]);
+
+    expect(
+      document.querySelectorAll('.cdt-sort-indicator[data-active]'),
+    ).toHaveLength(1);
+    // The slot is still rendered on the unsorted column, holding its width.
+    expect(document.querySelectorAll('.cdt-sort-indicator')).toHaveLength(2);
+  });
+
+  it('numbers each arrow under a multi-column sort', () => {
+    renderSortable([
+      { id: 'name', desc: false },
+      { id: 'id', desc: true },
+    ]);
+
+    expect(positions()).toEqual(['1', '2']);
+  });
+
+  it('leaves the position off a single sort, where order means nothing', () => {
+    renderSortable([{ id: 'name', desc: false }]);
+
+    expect(positions()).toEqual([]);
+  });
+});

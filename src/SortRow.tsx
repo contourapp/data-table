@@ -1,8 +1,10 @@
 'use client';
 
-import { ActionIcon, Group, Select } from '@mantine/core';
-import { IconX } from '@tabler/icons-react';
+import { ActionIcon, Box, Group, Select } from '@mantine/core';
+import { IconArrowsSort, IconX } from '@tabler/icons-react';
 import type { SortingState } from '@tanstack/react-table';
+
+import { classNames } from './classNames.js';
 
 export type ColumnSort = SortingState[number];
 
@@ -38,6 +40,9 @@ export function SortRow({
         borderRadius: 'var(--mantine-radius-sm)',
       }}
     >
+      <Box className={classNames.chipIcon} aria-hidden>
+        <IconArrowsSort size={13} />
+      </Box>
       <Select
         size="xs"
         aria-label="Sort column"
@@ -51,8 +56,7 @@ export function SortRow({
             fontWeight: 500,
             border: 'none',
             borderRight: '1px solid var(--mantine-color-gray-3)',
-            borderRadius:
-              'var(--mantine-radius-sm) 0 0 var(--mantine-radius-sm)',
+            borderRadius: 0,
           },
         }}
         comboboxProps={{ offset: 4, width: 'max-content' }}

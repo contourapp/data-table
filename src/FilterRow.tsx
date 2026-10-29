@@ -1,5 +1,6 @@
 import {
   ActionIcon,
+  Box,
   Group,
   NumberInput,
   Select,
@@ -7,9 +8,10 @@ import {
   type TextInputProps,
 } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
-import { IconX } from '@tabler/icons-react';
+import { IconFilter, IconX } from '@tabler/icons-react';
 import { useEffect, useRef, useState } from 'react';
 
+import { classNames } from './classNames.js';
 import type { DataTableColumnDef } from './DataTable.js';
 import {
   type ColumnType,
@@ -228,8 +230,12 @@ export function FilterRow<TData extends object>({
         borderRadius: 'var(--mantine-radius-sm)',
       }}
     >
+      <Box className={classNames.chipIcon} aria-hidden>
+        <IconFilter size={13} />
+      </Box>
       <Select
         size="xs"
+        aria-label="Filter column"
         data={columnOptions}
         value={filter.columnId}
         onChange={(value) =>
@@ -242,8 +248,7 @@ export function FilterRow<TData extends object>({
             fontWeight: 500,
             border: 'none',
             borderRight: '1px solid var(--mantine-color-gray-3)',
-            borderRadius:
-              'var(--mantine-radius-sm) 0 0 var(--mantine-radius-sm)',
+            borderRadius: 0,
           },
         }}
         comboboxProps={{ offset: 4, width: 'max-content' }}

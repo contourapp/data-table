@@ -8,6 +8,10 @@ export const classNames = {
   container: 'cdt-container',
   headerRow: 'cdt-header-row',
   headerCell: 'cdt-header-cell',
+  headerLabel: 'cdt-header-label',
+  sortIndicator: 'cdt-sort-indicator',
+  sortPosition: 'cdt-sort-position',
+  columnFilter: 'cdt-column-filter',
   bodyRow: 'cdt-body-row',
   bodyCell: 'cdt-body-cell',
   detailPanel: 'cdt-detail-panel',
@@ -16,5 +20,5 @@ export const classNames = {
   virtualRow: 'cdt-virtual-row',
   filterBar: 'cdt-filter-bar',
   filterBarScroll: 'cdt-filter-bar-scroll',
-  columnMenu: 'cdt-column-menu',
+  chipIcon: 'cdt-chip-icon',
 } as const;

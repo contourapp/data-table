@@ -6,7 +6,7 @@ Extracted from Contour, where it backs ~50 admin and reporting tables.
 
 - **One `<DataTable>`** covering sorting, row selection, expansion and sub-rows, grouping, row ordering by drag, row actions, detail panels, infinite scroll with virtualization, empty states and loading skeletons.
 - **A toolbar** (`<TableFilters>`) holding both filter and sort chips, built from your column defs, producing a typed GraphQL-shaped filter object and a TanStack `SortingState`.
-- **Per-column header menus** for sorting and filtering a single column, overlaid on the header so they cost no width.
+- **Headers that show their own state** — an arrow on sorted columns, a funnel on filtered ones, and a one-click toggle to filter a column, all costing nothing while unused.
 - **URL-synchronized state** — `useTableFilters` and `useTableSorting` keep filters and sorting in the query string, so a filtered table survives a reload or a shared link.
 - **CSS-grid layout**, not `<table>`, so column tracks, sticky headers and virtual rows stay consistent.
 
@@ -105,16 +105,33 @@ Both live in the same toolbar, as removable chips. Pass the same state to
   column, an operator or direction, and a value. Caps default to three of each
   (`maxFilters`, `maxSorts`); omit `onSortingChange` to keep sorting out of the
   bar entirely.
-- **Column header menus** appear on hover at the right edge of each header,
-  offering `Ascending` / `Descending` / `Clear sort` and `Add filter`. The menu
-  only lists what a column supports, and renders nothing for a column that can
-  neither sort nor filter.
+- **Headers** carry the same two states, and nothing else. Clicking a header
+  sorts it, as it always has. A funnel button on the right adds a filter for
+  that column, or removes the one it has.
 
-The two differ in one way worth knowing: the header menu **replaces** the sort,
-matching what clicking a header has always done, while adding from the toolbar
-**appends** one — that is where you compose a multi-column sort. Sorts apply in
-chip order, so in `Status ascending, Amount descending` the amount breaks ties
-within a status.
+Each state is quiet until it means something:
+
+| Column is           | Header shows                                              |
+| ------------------- | --------------------------------------------------------- |
+| sortable, unsorted  | nothing; a faint `⇅` on hover                              |
+| sorted              | `↑` or `↓` in the accent colour, beside the label          |
+| sorted, among many  | the same arrow with its position, so `↑1` leads `↓2`       |
+| filterable          | nothing; a faint outline funnel on hover, which adds a filter |
+| filtered            | a filled funnel in the accent colour, which removes it     |
+
+The sort slot is reserved on every sortable column, so sorting one never shifts
+its label, and the funnel only enters the header's flow once the column is
+actually filtered — an unused control costs a column no width.
+
+Sorting and filtering are different operations — one reorders rows, the other
+hides them — so they never share a glyph. The toolbar chips lead with the same
+two glyphs their headers use, which is what tells a filter chip from a sort
+chip at a glance.
+
+Sorts apply in chip order, so in `Status ascending, Amount descending` the
+amount breaks ties within a status. Clicking a header **replaces** the sort,
+matching what clicking a header has always done; adding from the toolbar
+**appends** one, which is where multi-column sorts get composed.
 
 Filtering addresses a column by its accessor key, so accessor-function columns
 are offered for sorting but not filtering.
@@ -165,6 +182,7 @@ Colours and spacing come from Mantine CSS variables, so the table inherits the h
 | Variable                    | Default              | Effect                                 |
 | --------------------------- | -------------------- | -------------------------------------- |
 | `--table-border-color`      | `--mantine-color-gray-3` | Header and row borders.            |
+| `--cdt-active-color`        | `--mantine-primary-color-filled` | Sorted and filtered header indicators. |
 | `--tr-hover-bg`             | `--mantine-color-gray-0` | Row hover background.              |
 | `--app-shell-header-height` | `0px`                | Subtracted from the default full-height table. |
 
@@ -181,6 +199,17 @@ const { filter } = useTableFilters<InvoiceFilter>(searchParams);
 ```
 
 Filters with no value chosen yet are dropped rather than sent, so a half-configured filter never narrows a query. If your backend speaks a different dialect, read `tableFilters` directly and translate it yourself.
+
+**Every filter is ANDed.** `useTableFilters` emits a single `and` array and the
+toolbar offers no `or`; the emitted objects carry empty `and`/`or` slots only to
+satisfy a recursive GraphQL filter input. Note that `baseFilters` must stay
+ANDed whatever the user picks — they usually scope a query to an organization or
+a tenant, and folding them into an `or` would widen it rather than narrow it:
+
+```ts
+// if OR is ever added, this is the shape, not `{ or: [...everything] }`
+{ and: [...baseFilters, { or: userFilters }] }
+```
 
 ## Development
 
