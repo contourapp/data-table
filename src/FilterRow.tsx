@@ -11,6 +11,7 @@ import { IconX } from '@tabler/icons-react';
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
 
 import { classNames } from './classNames.js';
+import { useChipDragProps, type ChipReorder } from './chipReorder.js';
 import type { DataTableColumnDef } from './DataTable.js';
 import {
   type ColumnType,
@@ -78,6 +79,11 @@ interface FilterRowProps<TData extends object> {
   }[];
   updateFilter: (id: string, updates: Partial<TableFilter>) => void;
   removeFilter: (id: string) => void;
+  /**
+   * Drag state for this chip's position among the filters. Omit it and the
+   * chip is not reorderable.
+   */
+  chip?: ChipReorder;
 }
 
 const needsValue = (operator: FilterOperator) => {
@@ -119,7 +125,9 @@ export function FilterRow<TData extends object>({
   filterableColumns,
   updateFilter,
   removeFilter,
+  chip,
 }: FilterRowProps<TData>) {
+  const dragProps = useChipDragProps(chip, filter.id);
   const columnType = filter.columnType || 'text';
   const filterColumn = filterableColumns.find(
     (col) => (col.id || col.accessorKey) === filter.columnId,
@@ -233,7 +241,7 @@ export function FilterRow<TData extends object>({
   };
 
   return (
-    <Group gap={0} wrap="nowrap" className={classNames.chip}>
+    <Group gap={0} wrap="nowrap" className={classNames.chip} {...dragProps}>
       <Select
         {...chipField(
           columnOptions.find((option) => option.value === filter.columnId)

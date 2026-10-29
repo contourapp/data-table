@@ -253,6 +253,33 @@
   border-color: var(--mantine-color-gray-4);
 }
 
+/* Grab anywhere that is not a control. The fields keep their own cursors, so
+   what is draggable and what is clickable stay legible under the pointer. */
+.cdt-chip[data-draggable] {
+  cursor: grab;
+}
+
+.cdt-chip[data-dragging] {
+  opacity: 0.4;
+  cursor: grabbing;
+}
+
+/* The landing line is drawn inside the chip it would sit beside — a real
+   element between chips would move every one of them the moment it appeared,
+   which is the one thing a drop indicator must not do. */
+.cdt-chip[data-drop-before],
+.cdt-chip[data-drop-after] {
+  border-color: var(--mantine-color-gray-3);
+}
+
+.cdt-chip[data-drop-before] {
+  box-shadow: inset 2px 0 0 var(--mantine-primary-color-filled);
+}
+
+.cdt-chip[data-drop-after] {
+  box-shadow: inset -2px 0 0 var(--mantine-primary-color-filled);
+}
+
 /* Widths come in per field as custom properties; everything else is uniform.
    A field is as wide as the words in it, clamped at both ends — a text input
    has no intrinsic width, and left to reserve its widest case every segment

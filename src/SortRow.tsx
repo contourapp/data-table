@@ -6,6 +6,7 @@ import type { SortingState } from '@tanstack/react-table';
 import type { CSSProperties } from 'react';
 
 import { classNames } from './classNames.js';
+import { useChipDragProps, type ChipReorder } from './chipReorder.js';
 
 export type ColumnSort = SortingState[number];
 
@@ -14,6 +15,11 @@ interface SortRowProps {
   columnOptions: { value: string; label: string }[];
   updateSort: (columnId: string, updates: Partial<ColumnSort>) => void;
   removeSort: (columnId: string) => void;
+  /**
+   * Drag state for this chip's position among the sorts, which is the sort's
+   * precedence. Omit it and the chip is not reorderable.
+   */
+  chip?: ChipReorder;
 }
 
 /**
@@ -24,20 +30,25 @@ interface SortRowProps {
  * column, operator, value — while a sort is a column and a direction, and the
  * arrow here is the same glyph the column's header shows, so the two read as
  * one state.
+ *
+ * Chips drag to reorder, and for a sort that order is precedence: the first
+ * chip decides the rows and the rest break its ties.
  */
 export function SortRow({
   sort,
   columnOptions,
   updateSort,
   removeSort,
+  chip,
 }: SortRowProps) {
+  const dragProps = useChipDragProps(chip, sort.id);
   const columnLabel =
     columnOptions.find((option) => option.value === sort.id)?.label ?? sort.id;
   const direction = sort.desc ? 'descending' : 'ascending';
   const flipped = sort.desc ? 'ascending' : 'descending';
 
   return (
-    <Group gap={0} wrap="nowrap" className={classNames.chip}>
+    <Group gap={0} wrap="nowrap" className={classNames.chip} {...dragProps}>
       <Select
         size="xs"
         variant="unstyled"

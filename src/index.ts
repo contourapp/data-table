@@ -6,6 +6,7 @@ export { FilterRow } from './FilterRow.js';
 export { SortRow } from './SortRow.js';
 export { FilterConnectorToggle } from './FilterConnectorToggle.js';
 export type { ColumnSort } from './SortRow.js';
+export type { ChipReorder } from './chipReorder.js';
 
 export { ColumnFilterToggle } from './components/ColumnFilterToggle.js';
 export { DragHandle } from './components/DragHandle.js';

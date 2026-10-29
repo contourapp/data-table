@@ -178,6 +178,21 @@ amount breaks ties within a status. Clicking a header **replaces** the sort,
 matching what clicking a header has always done; adding from the toolbar
 **appends** one, which is where multi-column sorts get composed.
 
+**Chips drag to reorder**, in both groups, as soon as there are two of them.
+For sorts that is precedence — drag a chip to the front and it decides the
+rows, with the rest breaking its ties — and the header positions follow. For
+filters it is reading order only: one connector governs the whole bar, so
+`A and B` and `B and A` select the same rows.
+
+The whole chip is the handle. Order is the thing being dragged and the chip is
+what carries it, so a grip would add nothing but the width of a control most
+chips never need. A press that lands in an editable field is left alone, so a
+filter's value can still be selected; a press anywhere else arms the drag, and
+a click that never moves reaches whatever it landed on either way.
+
+Native drag is a mouse gesture, so chips also move on `Alt` + `←` / `→` while
+anything inside them has focus.
+
 Filtering addresses a column by its accessor key, so accessor-function columns
 are offered for sorting but not filtering.
 

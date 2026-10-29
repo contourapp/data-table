@@ -20,6 +20,7 @@ import {
 import type { SortingState } from '@tanstack/react-table';
 import { Fragment, useEffect, useRef, useState } from 'react';
 
+import { useChipReorder, reorder } from './chipReorder.js';
 import { classNames } from './classNames.js';
 import { DEFAULT_MAX_FILTERS, DEFAULT_MAX_SORTS } from './constants.js';
 import {
@@ -192,6 +193,17 @@ export function TableFilters<TData extends object>({
   const removeSort = (columnId: string) => {
     onSortingChange?.(sorting.filter((sort) => sort.id !== columnId));
   };
+
+  // Order means different things in the two groups, so both are draggable but
+  // only one of them changes the result: sorts apply in chip order, where the
+  // first decides the rows and the rest break its ties, while one connector
+  // governs every filter and leaves theirs purely a reading order.
+  const filterChip = useChipReorder(filters.length, (from, to) =>
+    onFiltersChange(reorder(filters, from, to)),
+  );
+  const sortChip = useChipReorder(sorting.length, (from, to) =>
+    onSortingChange?.(reorder(sorting, from, to)),
+  );
 
   const clearAll = () => {
     onFiltersChange([]);
@@ -399,6 +411,7 @@ export function TableFilters<TData extends object>({
                     updateFilter={updateFilter}
                     removeFilter={removeFilter}
                     filterableColumns={filterableColumns}
+                    chip={filters.length > 1 ? filterChip(index) : undefined}
                   />
                 </Fragment>
               ))}
@@ -420,13 +433,14 @@ export function TableFilters<TData extends object>({
               <Box className={classNames.toolbarGroupIcon} aria-hidden>
                 <IconArrowsSort size={14} />
               </Box>
-              {sorting.map((sort) => (
+              {sorting.map((sort, index) => (
                 <SortRow
                   key={sort.id}
                   sort={sort}
                   columnOptions={sortColumnOptions}
                   updateSort={updateSort}
                   removeSort={removeSort}
+                  chip={sorting.length > 1 ? sortChip(index) : undefined}
                 />
               ))}
             </Group>
