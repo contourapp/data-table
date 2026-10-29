@@ -21,6 +21,9 @@ export const classNames = {
   virtualRow: 'cdt-virtual-row',
   filterBar: 'cdt-filter-bar',
   filterBarScroll: 'cdt-filter-bar-scroll',
-  chipIcon: 'cdt-chip-icon',
+  chip: 'cdt-chip',
+  toolbarGroup: 'cdt-toolbar-group',
+  toolbarGroupIcon: 'cdt-toolbar-group-icon',
+  toolbarDivider: 'cdt-toolbar-divider',
   filterConnector: 'cdt-filter-connector',
 } as const;

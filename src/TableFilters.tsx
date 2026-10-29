@@ -14,6 +14,7 @@ import {
   IconArrowsSort,
   IconClearAll,
   IconFilter,
+  IconFilterFilled,
   IconPlus,
   IconX,
 } from '@tabler/icons-react';
@@ -279,63 +280,97 @@ export function TableFilters<TData extends object>({
   return (
     <Box className={classNames.filterBar}>
       <Group gap="xs" wrap="nowrap" justify="space-between">
-        <Group gap="xs" wrap="nowrap" className={classNames.filterBarScroll}>
-          {customFilters.map((customFilter) =>
-            customFilter.render ? (
-              <Box key={customFilter.id}>{customFilter.render()}</Box>
-            ) : (
-              <Badge
-                key={customFilter.id}
-                variant="light"
-                size="lg"
-                pr={3}
-                style={customFilter.onClick ? { cursor: 'pointer' } : undefined}
-                onClick={customFilter.onClick}
-                rightSection={
-                  <ActionIcon
-                    aria-label="Remove filter"
-                    size="xs"
-                    variant="subtle"
-                    color="gray"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      customFilter.onRemove();
-                    }}
+        <Group gap="sm" wrap="nowrap" className={classNames.filterBarScroll}>
+          {(customFilters.length > 0 || filters.length > 0) && (
+            <Group
+              gap="xs"
+              wrap="nowrap"
+              className={classNames.toolbarGroup}
+              data-kind="filter"
+              aria-label="Filters"
+              role="group"
+            >
+              <Box className={classNames.toolbarGroupIcon} aria-hidden>
+                <IconFilterFilled size={14} />
+              </Box>
+              {customFilters.map((customFilter) =>
+                customFilter.render ? (
+                  <Box key={customFilter.id}>{customFilter.render()}</Box>
+                ) : (
+                  <Badge
+                    key={customFilter.id}
+                    variant="light"
+                    size="lg"
+                    pr={3}
+                    style={
+                      customFilter.onClick ? { cursor: 'pointer' } : undefined
+                    }
+                    onClick={customFilter.onClick}
+                    rightSection={
+                      <ActionIcon
+                        aria-label="Remove filter"
+                        size="xs"
+                        variant="subtle"
+                        color="gray"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          customFilter.onRemove();
+                        }}
+                      >
+                        <IconX size={12} />
+                      </ActionIcon>
+                    }
                   >
-                    <IconX size={12} />
-                  </ActionIcon>
-                }
-              >
-                {customFilter.label}
-              </Badge>
-            ),
-          )}
-          {filters.map((filter, index) => (
-            <Fragment key={filter.id}>
-              {index > 0 && onConnectorChange && (
-                <FilterConnectorToggle
-                  connector={connector}
-                  onChange={onConnectorChange}
-                />
+                    {customFilter.label}
+                  </Badge>
+                ),
               )}
-              <FilterRow
-                filter={filter}
-                columnOptions={columnOptions}
-                updateFilter={updateFilter}
-                removeFilter={removeFilter}
-                filterableColumns={filterableColumns}
-              />
-            </Fragment>
-          ))}
-          {sorting.map((sort) => (
-            <SortRow
-              key={sort.id}
-              sort={sort}
-              columnOptions={sortColumnOptions}
-              updateSort={updateSort}
-              removeSort={removeSort}
-            />
-          ))}
+              {filters.map((filter, index) => (
+                <Fragment key={filter.id}>
+                  {index > 0 && onConnectorChange && (
+                    <FilterConnectorToggle
+                      connector={connector}
+                      onChange={onConnectorChange}
+                    />
+                  )}
+                  <FilterRow
+                    filter={filter}
+                    columnOptions={columnOptions}
+                    updateFilter={updateFilter}
+                    removeFilter={removeFilter}
+                    filterableColumns={filterableColumns}
+                  />
+                </Fragment>
+              ))}
+            </Group>
+          )}
+          {(customFilters.length > 0 || filters.length > 0) &&
+            sorting.length > 0 && (
+              <Box className={classNames.toolbarDivider} aria-hidden />
+            )}
+          {sorting.length > 0 && (
+            <Group
+              gap="xs"
+              wrap="nowrap"
+              className={classNames.toolbarGroup}
+              data-kind="sort"
+              aria-label="Sorting"
+              role="group"
+            >
+              <Box className={classNames.toolbarGroupIcon} aria-hidden>
+                <IconArrowsSort size={14} />
+              </Box>
+              {sorting.map((sort) => (
+                <SortRow
+                  key={sort.id}
+                  sort={sort}
+                  columnOptions={sortColumnOptions}
+                  updateSort={updateSort}
+                  removeSort={removeSort}
+                />
+              ))}
+            </Group>
+          )}
         </Group>
         <ActionIcon.Group style={{ flexShrink: 0 }}>
           {showAddMenu && (

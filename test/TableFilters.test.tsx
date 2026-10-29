@@ -126,14 +126,49 @@ describe('TableFilters sorting', () => {
     expect(screen.queryByRole('button', { name: 'Sort' })).toBeNull();
   });
 
-  it('flips direction from the sort chip', async () => {
+  it('flips direction from the sort chip’s arrow', () => {
     const onSortingChange = vi.fn<(next: SortingState) => void>();
     renderWithSorting([{ id: 'status', desc: false }], onSortingChange);
 
-    fireEvent.click(screen.getByRole('combobox', { name: 'Sort direction' }));
-    fireEvent.click(await screen.findByRole('option', { name: 'descending' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: /Sort direction: ascending/ }),
+    );
 
     expect(onSortingChange).toHaveBeenCalledWith([{ id: 'status', desc: true }]);
+  });
+
+  it('keeps filters and sorts in separate labelled groups', () => {
+    renderWithSorting(
+      [{ id: 'status', desc: false }],
+      vi.fn(),
+      [
+        {
+          id: 'f-1',
+          columnId: 'dimension_value_name',
+          operator: 'contains',
+          value: 'a',
+          columnType: 'text',
+          field: 'name',
+        },
+      ],
+    );
+
+    const filters = screen.getByRole('group', { name: 'Filters' });
+    const sorts = screen.getByRole('group', { name: 'Sorting' });
+    expect(filters).toContainElement(
+      screen.getByRole('combobox', { name: 'Filter column' }),
+    );
+    expect(sorts).toContainElement(
+      screen.getByRole('combobox', { name: 'Sort column' }),
+    );
+    expect(document.querySelectorAll('.cdt-toolbar-divider')).toHaveLength(1);
+  });
+
+  it('shows no divider with only one kind of chip', () => {
+    renderWithSorting([{ id: 'status', desc: false }], vi.fn());
+
+    expect(screen.queryByRole('group', { name: 'Filters' })).toBeNull();
+    expect(document.querySelectorAll('.cdt-toolbar-divider')).toHaveLength(0);
   });
 
   it('retargets a chip at another column without duplicating an existing sort', async () => {

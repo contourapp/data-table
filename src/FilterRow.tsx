@@ -1,6 +1,5 @@
 import {
   ActionIcon,
-  Box,
   Group,
   NumberInput,
   Select,
@@ -8,7 +7,7 @@ import {
   type TextInputProps,
 } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
-import { IconFilter, IconX } from '@tabler/icons-react';
+import { IconX } from '@tabler/icons-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { classNames } from './classNames.js';
@@ -222,17 +221,7 @@ export function FilterRow<TData extends object>({
   };
 
   return (
-    <Group
-      gap={0}
-      wrap="nowrap"
-      style={{
-        border: '1px solid var(--mantine-color-gray-4)',
-        borderRadius: 'var(--mantine-radius-sm)',
-      }}
-    >
-      <Box className={classNames.chipIcon} aria-hidden>
-        <IconFilter size={13} />
-      </Box>
+    <Group gap={0} wrap="nowrap" className={classNames.chip}>
       <Select
         size="xs"
         aria-label="Filter column"
@@ -248,7 +237,8 @@ export function FilterRow<TData extends object>({
             fontWeight: 500,
             border: 'none',
             borderRight: '1px solid var(--mantine-color-gray-3)',
-            borderRadius: 0,
+            borderRadius:
+              'var(--mantine-radius-sm) 0 0 var(--mantine-radius-sm)',
           },
         }}
         comboboxProps={{ offset: 4, width: 'max-content' }}

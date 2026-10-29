@@ -3,10 +3,16 @@
  *
  * Import once in your app: `import '@contourapp/data-table/styles.css'`.
  * Colours and spacing come from Mantine CSS variables, so the table inherits
- * the host theme. Three variables are table-specific and may be overridden:
+ * the host theme. A few variables are table-specific and may be overridden:
  *   --table-border-color  row and header borders (default: gray-3)
  *   --tr-hover-bg         row hover background  (default: gray-0)
+ *   --cdt-filter-color    active filter indicators (default: primary)
+ *   --cdt-sort-color      active sort indicators   (default: text)
  *   --app-shell-header-height  subtracted from the default full-height table
+ *
+ * Filters and sorts are kept visibly different throughout. A filter hides
+ * rows, so its indicators take the accent colour; a sort only reorders them,
+ * so its indicators stay the text colour.
  */
 
 .cdt-container {
@@ -83,7 +89,7 @@
 
 .cdt-sort-indicator[data-active] {
   opacity: 1;
-  color: var(--cdt-active-color, var(--mantine-primary-color-filled));
+  color: var(--cdt-sort-color, var(--mantine-color-text));
 }
 
 /* Which sort runs first is what decides the row order, so under a multi-column
@@ -114,7 +120,7 @@
 .cdt-column-filter[data-active] {
   opacity: 1;
   pointer-events: auto;
-  color: var(--cdt-active-color, var(--mantine-primary-color-filled));
+  color: var(--cdt-filter-color, var(--mantine-primary-color-filled));
 }
 
 .cdt-header-cell[data-sortable='false'] {
@@ -220,18 +226,33 @@
   display: none;
 }
 
-/* A filter chip and a sort chip are the same row of selects otherwise, so each
-   leads with the glyph its column header uses for the same state. */
-.cdt-chip-icon {
+.cdt-chip {
+  border: 1px solid var(--mantine-color-gray-4);
+  border-radius: var(--mantine-radius-sm);
+}
+
+/* Filters and sorts are separate groups, each led by its glyph and divided
+   from the other, rather than one undifferentiated run of chips. */
+.cdt-toolbar-group {
+  flex: 0 0 auto;
+}
+
+.cdt-toolbar-group-icon {
   display: flex;
   align-items: center;
-  align-self: stretch;
   flex: 0 0 auto;
-  padding: 0 6px;
-  color: var(--mantine-color-dimmed);
-  background-color: var(--mantine-color-gray-0);
-  border-right: 1px solid var(--mantine-color-gray-3);
-  border-radius: var(--mantine-radius-sm) 0 0 var(--mantine-radius-sm);
+  color: var(--cdt-sort-color, var(--mantine-color-text));
+}
+
+.cdt-toolbar-group[data-kind='filter'] .cdt-toolbar-group-icon {
+  color: var(--cdt-filter-color, var(--mantine-primary-color-filled));
+}
+
+.cdt-toolbar-divider {
+  flex: 0 0 auto;
+  width: 1px;
+  height: 22px;
+  background-color: var(--mantine-color-gray-4);
 }
 
 /* Sits between two filter chips as the word joining them. Deliberately plain —

@@ -5,7 +5,7 @@ A virtualized, filterable data table for React, built on [Mantine](https://manti
 Extracted from Contour, where it backs ~50 admin and reporting tables.
 
 - **One `<DataTable>`** covering sorting, row selection, expansion and sub-rows, grouping, row ordering by drag, row actions, detail panels, infinite scroll with virtualization, empty states and loading skeletons.
-- **A toolbar** (`<TableFilters>`) holding both filter and sort chips, built from your column defs, producing a typed GraphQL-shaped filter object and a TanStack `SortingState`. Filters join with `and` or `or`.
+- **A toolbar** (`<TableFilters>`) with a filter group and a sort group, built from your column defs, producing a typed GraphQL-shaped filter object and a TanStack `SortingState`. Filters join with `and` or `or`.
 - **Headers that show their own state** — an arrow on sorted columns, a funnel on filtered ones, and a one-click toggle to filter a column, all costing nothing while unused.
 - **URL-synchronized state** — `useTableFilters` and `useTableSorting` keep filters and sorting in the query string, so a filtered table survives a reload or a shared link.
 - **CSS-grid layout**, not `<table>`, so column tracks, sticky headers and virtual rows stay consistent.
@@ -101,8 +101,9 @@ Both live in the same toolbar, as removable chips. Pass the same state to
 `TableFilters` and `DataTable` and the two stay in step.
 
 - **`TableFilters`** renders a `Filter` and a `Sort` button when nothing is
-  applied, and chips plus an add/clear group once something is. Each chip is a
-  column, an operator or direction, and a value. Caps default to three of each
+  applied, and two groups plus an add/clear control once something is: filters
+  on the left, led by a funnel; sorts on the right, led by `⇅`; a divider
+  between them when both are present. Caps default to three of each
   (`maxFilters`, `maxSorts`); omit `onSortingChange` to keep sorting out of the
   bar entirely.
 - **Headers** carry the same two states, and nothing else. Clicking a header
@@ -138,9 +139,21 @@ Both slots are reserved on a column that supports them, so neither hovering a
 header nor sorting one shifts anything.
 
 Sorting and filtering are different operations — one reorders rows, the other
-hides them — so they never share a glyph. The toolbar chips lead with the same
-two glyphs their headers use, which is what tells a filter chip from a sort
-chip at a glance.
+hides them — and the package keeps them visibly different in four ways at
+once, so no single cue has to carry it:
+
+1. **Grouped.** Filter chips and sort chips are separate groups in the
+   toolbar, divided by a rule when both are present, never one run of chips.
+2. **Labelled.** One funnel leads the filter group and one `⇅` leads the sort
+   group — the same two glyphs the column headers use.
+3. **Shaped.** A filter is an expression and its chip has three fields:
+   column, operator, value. A sort is a column and a direction, and its chip is
+   a column plus an arrow button that flips it — the same arrow its header
+   shows.
+4. **Weighted.** A filter hides rows, so filter indicators take the accent
+   colour (`--cdt-filter-color`). A sort only reorders them, so sort
+   indicators stay the text colour (`--cdt-sort-color`). Same rule in the
+   headers: accent funnel, neutral arrow.
 
 Sorts apply in chip order, so in `Status ascending, Amount descending` the
 amount breaks ties within a status. Clicking a header **replaces** the sort,
@@ -196,7 +209,8 @@ Colours and spacing come from Mantine CSS variables, so the table inherits the h
 | Variable                    | Default              | Effect                                 |
 | --------------------------- | -------------------- | -------------------------------------- |
 | `--table-border-color`      | `--mantine-color-gray-3` | Header and row borders.            |
-| `--cdt-active-color`        | `--mantine-primary-color-filled` | Sorted and filtered header indicators. |
+| `--cdt-filter-color`        | `--mantine-primary-color-filled` | Active filter indicators, toolbar and headers. |
+| `--cdt-sort-color`          | `--mantine-color-text`   | Active sort indicators, toolbar and headers. |
 | `--tr-hover-bg`             | `--mantine-color-gray-0` | Row hover background.              |
 | `--app-shell-header-height` | `0px`                | Subtracted from the default full-height table. |
 
