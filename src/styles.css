@@ -276,10 +276,13 @@
    lighter than a chip so it reads as the joint and not a third condition. */
 .cdt-filter-connector {
   flex: 0 0 auto;
-  width: 58px;
+  width: 52px;
 }
 
+/* Sized to the word, so the chevron sits against it rather than a field away. */
 .cdt-filter-connector input {
+  padding-left: 6px;
+  padding-right: 18px;
   font-weight: 500;
   color: var(--mantine-color-dimmed);
   cursor: pointer;
