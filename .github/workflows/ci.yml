@@ -13,6 +13,10 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 24
+          # The default probes the package manager to set up its cache, and it
+          # does that before corepack is enabled — so the runner's Yarn 1 reads
+          # `packageManager: yarn@4` and refuses before the job starts.
+          package-manager-cache: false
       - run: corepack enable
       - run: yarn install --immutable
       - run: yarn tsc
