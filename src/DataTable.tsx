@@ -107,6 +107,9 @@ interface DataTableProps<TData extends object> {
 }
 
 const APP_SHELL_HEADER_HEIGHT = 'var(--app-shell-header-height, 0px)';
+// Published by `TableFilters` on the element the two share; the fallback is
+// the bar's single-row height, for a toolbar rendered somewhere else.
+const TOOLBAR_HEIGHT = 'var(--cdt-toolbar-height, 47.5px)';
 
 const EMPTY_DATA: never[] = [];
 const EMPTY_GROUPING: string[] = [];
@@ -381,7 +384,7 @@ const DataTable = <TData extends object>({
 
   const containerHeight =
     height ??
-    `calc(100dvh - ${APP_SHELL_HEADER_HEIGHT}${enableTableFilters ? ' - 47.5px' : ''})`;
+    `calc(100dvh - ${APP_SHELL_HEADER_HEIGHT}${enableTableFilters ? ` - ${TOOLBAR_HEIGHT}` : ''})`;
 
   const renderRow = (row: Row<TData>, rowIndex: number) => {
     const isGrouped = row.getIsGrouped?.();
@@ -502,7 +505,7 @@ const DataTable = <TData extends object>({
           height={
             height
               ? `calc(${height} - 84px)`
-              : `calc(100dvh - 51px - ${APP_SHELL_HEADER_HEIGHT}${enableTableFilters ? ' - 48px' : ''})`
+              : `calc(100dvh - 51px - ${APP_SHELL_HEADER_HEIGHT}${enableTableFilters ? ` - ${TOOLBAR_HEIGHT}` : ''})`
           }
         />
       );

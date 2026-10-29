@@ -106,6 +106,14 @@ Both live in the same toolbar, as removable chips. Pass the same state to
   between them when both are present. Caps default to three of each
   (`maxFilters`, `maxSorts`); omit `onSortingChange` to keep sorting out of the
   bar entirely.
+
+  The two groups share a row while both fit. When they do not, the sort group
+  drops to a row of its own, and each row scrolls sideways independently —
+  chips never wrap, since a chip is one expression. The bar publishes its
+  measured height to the element it shares with `DataTable` as
+  `--cdt-toolbar-height`, which the table subtracts when sizing itself, so a
+  second row never pushes the page into scrolling. If you size the table
+  yourself with `height`, nothing changes.
 - **Headers** carry the same two states, and nothing else. Clicking a header
   sorts it, as it always has. A funnel button on the right adds a filter for
   that column, or removes the one it has.
@@ -230,10 +238,10 @@ Filters with no value chosen yet are dropped rather than sent, so a half-configu
 
 ### and / or
 
-One connector governs the whole bar, shown as the word between two filter
-chips and flipped by clicking it. Mixing connectors per gap would make the row
-depend on precedence it cannot show; genuinely mixed logic wants nested groups,
-which need more room than a single row of chips has.
+One connector governs the whole bar, shown as a pill between two filter chips
+— `and ⇄` or `or ⇄` — and flipped by clicking it. Mixing connectors per gap
+would make the row depend on precedence it cannot show; genuinely mixed logic
+wants nested groups, which need more room than a single row of chips has.
 
 ```tsx
 const { tableFilters, setTableFilters, filterConnector, setFilterConnector, filter } =

@@ -19,7 +19,7 @@ import {
   IconX,
 } from '@tabler/icons-react';
 import type { SortingState } from '@tanstack/react-table';
-import { Fragment, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 
 import { classNames } from './classNames.js';
 import { DEFAULT_MAX_FILTERS, DEFAULT_MAX_SORTS } from './constants.js';
@@ -88,6 +88,7 @@ export function TableFilters<TData extends object>({
   maxSorts = DEFAULT_MAX_SORTS,
 }: TableFiltersProps<TData>) {
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
+  const barRef = useRef<HTMLDivElement>(null);
   const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
 
@@ -191,6 +192,39 @@ export function TableFilters<TData extends object>({
   const hasActiveControls =
     filters.length > 0 || customFilters.length > 0 || sorting.length > 0;
 
+  // The bar is one row or two depending on what fits, so `DataTable` cannot
+  // assume its height. Publishing the measured height on the shared parent
+  // lets the table read it as `--cdt-toolbar-height` — siblings cannot set
+  // variables on each other, and a wrapper would change how the two compose.
+  useEffect(() => {
+    const bar = barRef.current;
+    const parent = bar?.parentElement;
+    if (!bar || !parent) return;
+
+    const publish = () => {
+      parent.style.setProperty('--cdt-toolbar-height', `${bar.offsetHeight}px`);
+      // Wrapping changes the bar's height, so this fires exactly when the
+      // divider between the groups would be left dangling at a row's edge.
+      const groups = bar.querySelectorAll<HTMLElement>(
+        `.${classNames.toolbarGroup}`,
+      );
+      const wrapped =
+        groups.length === 2 && groups[1].offsetTop > groups[0].offsetTop;
+      bar
+        .querySelector<HTMLElement>(`.${classNames.toolbarRows}`)
+        ?.toggleAttribute('data-wrapped', wrapped);
+    };
+    publish();
+    const observer = new ResizeObserver(publish);
+    observer.observe(bar);
+
+    return () => {
+      observer.disconnect();
+      parent.style.removeProperty('--cdt-toolbar-height');
+    };
+    // Re-subscribes when the bar switches between its empty and active roots.
+  }, [hasActiveControls]);
+
   const filterMenuItems = (
     <>
       {customFilterOptions.map((option) => (
@@ -221,7 +255,7 @@ export function TableFilters<TData extends object>({
 
   if (!hasActiveControls) {
     return (
-      <Box className={classNames.filterBar}>
+      <Box ref={barRef} className={classNames.filterBar}>
         <Group gap={4} wrap="nowrap">
           <Menu
             opened={isFilterMenuOpen}
@@ -278,9 +312,9 @@ export function TableFilters<TData extends object>({
     canAddSort;
 
   return (
-    <Box className={classNames.filterBar}>
-      <Group gap="xs" wrap="nowrap" justify="space-between">
-        <Group gap="sm" wrap="nowrap" className={classNames.filterBarScroll}>
+    <Box ref={barRef} className={classNames.filterBar}>
+      <Group gap="xs" wrap="nowrap" justify="space-between" align="flex-start">
+        <Box className={classNames.toolbarRows}>
           {(customFilters.length > 0 || filters.length > 0) && (
             <Group
               gap="xs"
@@ -371,7 +405,7 @@ export function TableFilters<TData extends object>({
               ))}
             </Group>
           )}
-        </Group>
+        </Box>
         <ActionIcon.Group style={{ flexShrink: 0 }}>
           {showAddMenu && (
             <Menu

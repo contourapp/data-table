@@ -202,16 +202,37 @@
 
 .cdt-filter-bar {
   padding: 8px var(--mantine-spacing-md);
-  height: 47.5px;
+  /* One row by default; grows when the sort group wraps below the filters.
+     The bar publishes its real height as --cdt-toolbar-height for the table. */
+  min-height: 47.5px;
   border-bottom: calc(0.0625rem * var(--mantine-scale)) solid
     var(--table-border-color, var(--mantine-color-gray-2));
 }
 
-/* Chips scroll sideways rather than wrapping, which would break the bar's
-   fixed height and the table height that is calculated from it. */
-.cdt-filter-bar-scroll {
+/* The filter group and the sort group share a row while both fit. Each is a
+   unit that refuses to shrink, so when they no longer fit the sort group
+   wraps to a row of its own — never a mixed break mid-group — and a group
+   alone on a row is capped at the row's width and scrolls instead. */
+.cdt-toolbar-rows {
+  display: flex;
   flex: 1;
   min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px var(--mantine-spacing-sm);
+}
+
+.cdt-chip {
+  border: 1px solid var(--mantine-color-gray-4);
+  border-radius: var(--mantine-radius-sm);
+}
+
+/* Filters and sorts are separate groups, each led by its glyph and divided
+   from the other, rather than one undifferentiated run of chips. Each scrolls
+   sideways on its own: chips never wrap, since a chip is one expression. */
+.cdt-toolbar-group {
+  flex: 0 0 auto;
+  max-width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: none;
@@ -222,19 +243,8 @@
   mask-image: linear-gradient(to right, #000 calc(100% - 16px), transparent);
 }
 
-.cdt-filter-bar-scroll::-webkit-scrollbar {
+.cdt-toolbar-group::-webkit-scrollbar {
   display: none;
-}
-
-.cdt-chip {
-  border: 1px solid var(--mantine-color-gray-4);
-  border-radius: var(--mantine-radius-sm);
-}
-
-/* Filters and sorts are separate groups, each led by its glyph and divided
-   from the other, rather than one undifferentiated run of chips. */
-.cdt-toolbar-group {
-  flex: 0 0 auto;
 }
 
 .cdt-toolbar-group-icon {
@@ -255,12 +265,23 @@
   background-color: var(--mantine-color-gray-4);
 }
 
-/* Sits between two filter chips as the word joining them. Deliberately plain —
-   it is a connector, not a fourth chip, and should not compete with them. */
+/* Once the sort group is on its own row, the rows themselves do the dividing. */
+.cdt-toolbar-rows[data-wrapped] .cdt-toolbar-divider {
+  display: none;
+}
+
+/* Sits between two filter chips as the word joining them. Bordered and
+   carrying a swap glyph so it reads as a control, not a label; lighter than
+   a chip so it does not compete with them. */
 .cdt-filter-connector {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
   flex: 0 0 auto;
-  padding: 2px 4px;
-  border-radius: var(--mantine-radius-sm);
+  height: 24px;
+  padding: 0 6px;
+  border: 1px dashed var(--mantine-color-gray-4);
+  border-radius: var(--mantine-radius-xl);
   font-size: var(--mantine-font-size-xs);
   font-weight: 600;
   color: var(--mantine-color-dimmed);
@@ -270,6 +291,7 @@
 }
 
 .cdt-filter-connector:hover {
-  background-color: var(--mantine-color-gray-1);
+  border-style: solid;
+  background-color: var(--mantine-color-gray-0);
   color: var(--mantine-color-text);
 }

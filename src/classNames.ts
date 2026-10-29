@@ -20,7 +20,7 @@ export const classNames = {
   actionsCell: 'cdt-actions-cell',
   virtualRow: 'cdt-virtual-row',
   filterBar: 'cdt-filter-bar',
-  filterBarScroll: 'cdt-filter-bar-scroll',
+  toolbarRows: 'cdt-toolbar-rows',
   chip: 'cdt-chip',
   toolbarGroup: 'cdt-toolbar-group',
   toolbarGroupIcon: 'cdt-toolbar-group-icon',
