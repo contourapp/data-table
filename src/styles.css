@@ -8,6 +8,7 @@
  *   --tr-hover-bg         row hover background  (default: gray-0)
  *   --cdt-filter-color    filter indicators, toolbar and headers (default: primary)
  *   --cdt-sort-color      sort indicators, toolbar and headers   (default: primary)
+ *   --cdt-drop-color      the line marking where a dragged chip lands
  *   --app-shell-header-height  subtracted from the default full-height table
  *
  * An indicator is in the accent colour whenever it is live: the funnel on a
@@ -266,18 +267,22 @@
 
 /* The landing line is drawn inside the chip it would sit beside — a real
    element between chips would move every one of them the moment it appeared,
-   which is the one thing a drop indicator must not do. */
+   which is the one thing a drop indicator must not do.
+
+   A lighter shade than the indicators: this one is transient and the chips
+   stay readable under it, where a filtered or sorted column is a standing
+   state worth the full accent. */
 .cdt-chip[data-drop-before],
 .cdt-chip[data-drop-after] {
   border-color: var(--mantine-color-gray-3);
 }
 
 .cdt-chip[data-drop-before] {
-  box-shadow: inset 2px 0 0 var(--mantine-primary-color-filled);
+  box-shadow: inset 2px 0 0 var(--cdt-drop-color, var(--mantine-primary-color-4));
 }
 
 .cdt-chip[data-drop-after] {
-  box-shadow: inset -2px 0 0 var(--mantine-primary-color-filled);
+  box-shadow: inset -2px 0 0 var(--cdt-drop-color, var(--mantine-primary-color-4));
 }
 
 /* A chip in a drag says one thing: where the drop lands. The per-field hover

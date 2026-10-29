@@ -244,6 +244,7 @@ Colours and spacing come from Mantine CSS variables, so the table inherits the h
 | `--table-border-color`      | `--mantine-color-gray-3` | Header and row borders.            |
 | `--cdt-filter-color`        | `--mantine-primary-color-filled` | Filter indicators, toolbar and headers. |
 | `--cdt-sort-color`          | `--mantine-primary-color-filled` | Sort indicators, toolbar and headers. |
+| `--cdt-drop-color`          | `--mantine-primary-color-4` | The line marking where a dragged chip lands. |
 | `--tr-hover-bg`             | `--mantine-color-gray-0` | Row hover background.              |
 | `--app-shell-header-height` | `0px`                | Subtracted from the default full-height table. |
 
